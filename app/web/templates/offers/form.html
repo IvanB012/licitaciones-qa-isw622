@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% block title %}Editar oferta{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <h1 class="h3 fw-bold mb-3">Editar oferta</h1>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        <dl class="row mb-3">
+          <dt class="col-sm-4">Licitación</dt><dd class="col-sm-8" data-testid="offer-tender">{{ offer.tender.code }}</dd>
+          <dt class="col-sm-4">Proveedor</dt><dd class="col-sm-8" data-testid="offer-provider">{{ offer.provider.name }}</dd>
+          <dt class="col-sm-4">Presupuesto</dt><dd class="col-sm-8">{{ offer.tender.budget_cents | format_display('CRC') }}</dd>
+        </dl>
+        {{ form_error(error) }}
+        <form method="post" action="/offers/{{ offer.id }}/edit" novalidate data-testid="offer-edit-form">
+          <label for="amount" class="form-label">Monto (CRC)</label>
+          <input type="text" inputmode="decimal" class="form-control" id="amount" name="amount" value="{{ form.amount }}" required data-testid="offer-amount-input">
+          <div class="form-text">Solo dígitos, punto decimal y hasta 2 decimales. No puede superar el presupuesto.</div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-testid="offer-submit">Guardar cambios</button>
+            <a href="/tenders/{{ offer.tender_id }}" class="btn btn-outline-secondary" data-testid="offer-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -13,6 +13,7 @@ from app.rules.constants import STATUS_BORRADOR, TENDER_STATUSES
 from app.rules.money import format_money
 from app.rules.tenders import is_expired
 from app.rules.timeutil import from_cr, to_cr
+from app.services import offers as offers_service
 from app.services import tenders as service
 from app.services.currency import current_rate
 from app.web.templating import flash, render
@@ -90,12 +91,33 @@ def tender_new_submit(
     return RedirectResponse(f"/tenders/{tender.id}", status_code=303)
 
 
+def render_tender_detail(
+    request: Request,
+    db: Session,
+    clock: Clock,
+    tender: Tender,
+    *,
+    offer_form: dict | None = None,
+    offer_error: str | None = None,
+    status_code: int = 200,
+):
+    """Detalle de la licitación con su sección de ofertas (la reutiliza web/offers.py para mostrar errores)."""
+    ctx = {
+        "tender": tender,
+        "offers": offers_service.list_offers(db, tender.id),
+        "providers": offers_service.list_provider_options(db),
+        "offer_form": offer_form or {"provider_id": "", "amount": ""},
+        "offer_error": offer_error,
+        **_view_ctx(db, clock),
+    }
+    return render(request, "tenders/detail.html", ctx, status_code=status_code)
+
+
 @router.get("/tenders/{tender_id}")
 def tender_detail(
     request: Request, tender_id: int, db: Session = Depends(get_db), clock: Clock = Depends(get_clock)
 ):
-    tender = service.get_tender(db, tender_id)
-    return render(request, "tenders/detail.html", {"tender": tender, **_view_ctx(db, clock)})
+    return render_tender_detail(request, db, clock, service.get_tender(db, tender_id))
 
 
 @router.get("/tenders/{tender_id}/edit")
