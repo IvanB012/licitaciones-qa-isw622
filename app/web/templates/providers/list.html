@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Proveedores{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 fw-bold mb-0">Proveedores</h1>
+  <a href="/providers/new" class="btn btn-primary" data-testid="provider-new">Nuevo proveedor</a>
+</div>
+
+<div class="card app-card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-testid="providers-table">
+      <thead class="table-light">
+        <tr><th>Nombre</th><th>Correo de contacto</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in providers %}
+        <tr data-testid="provider-row-{{ p.id }}">
+          <td data-testid="provider-name-{{ p.id }}">{{ p.name }}</td>
+          <td data-testid="provider-email-{{ p.id }}">{{ p.contact_email or '—' }}</td>
+          <td class="text-end text-nowrap">
+            <a href="/providers/{{ p.id }}/edit" class="btn btn-sm btn-outline-secondary" data-testid="provider-edit-{{ p.id }}">Editar</a>
+            <form method="post" action="/providers/{{ p.id }}/delete" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-outline-danger" data-testid="provider-delete-{{ p.id }}">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-center text-muted py-4" data-testid="providers-empty">No hay proveedores.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
