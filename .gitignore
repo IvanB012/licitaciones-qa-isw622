@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Entorno y datos locales
+.env
+*.db
+*.sqlite
+*.sqlite3
+
+# Playwright / Node
+playwright-report/
+test-results/
+node_modules/
+
+# Claude Code (config local)
+.claude/settings.local.json
+
+# IDE / SO
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# NOTA: 04_Evidencias/ y 05_IA/ SE VERSIONAN (no ignorar).
