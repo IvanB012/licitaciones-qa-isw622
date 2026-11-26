@@ -5,6 +5,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 from app.rules.constants import CURRENCIES
+from app.rules.money import format_display
 from app.rules.timeutil import to_cr
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -17,6 +18,8 @@ def cr_datetime(value, fmt: str = "%d/%m/%Y %H:%M") -> str:
 
 
 templates.env.filters["cr_datetime"] = cr_datetime
+# Uso: {{ tender.budget_cents | format_display(currency, rate) }}  (rate solo se exige para USD)
+templates.env.filters["format_display"] = format_display
 
 
 def flash(request: Request, category: str, message: str) -> None:
