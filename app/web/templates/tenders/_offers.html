@@ -1,0 +1,51 @@
+{% from "macros.html" import form_error %}
+{% set open_for_offers = tender.status == 'Publicada' and not is_expired(tender) %}
+<div class="card app-card mt-4" data-testid="offers-section">
+  <div class="card-header bg-white fw-semibold d-flex justify-content-between">
+    <span>Ofertas</span><span class="text-muted small" data-testid="offers-count">{{ offers | length }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-testid="offers-table">
+      <thead class="table-light"><tr><th>Proveedor</th><th class="text-end">Monto</th><th>Registrada (hora CR)</th><th></th></tr></thead>
+      <tbody>
+        {% for o in offers %}
+        <tr data-testid="offer-row-{{ o.id }}">
+          <td data-testid="offer-provider-{{ o.id }}">{{ o.provider.name }}</td>
+          <td class="text-end text-nowrap" data-testid="offer-amount-{{ o.id }}">{{ o.amount_cents | format_display(currency, rate.rate) }}</td>
+          <td class="text-nowrap">{{ o.created_at | cr_datetime('%d/%m/%Y %H:%M:%S') }}</td>
+          <td class="text-end text-nowrap">
+            {% if open_for_offers %}
+            <a href="/offers/{{ o.id }}/edit" class="btn btn-sm btn-outline-secondary" data-testid="offer-edit-{{ o.id }}">Editar</a>
+            <form method="post" action="/offers/{{ o.id }}/delete" class="d-inline"><button type="submit" class="btn btn-sm btn-outline-danger" data-testid="offer-delete-{{ o.id }}">Eliminar</button></form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4" data-testid="offers-empty">Aún no hay ofertas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body border-top">
+    {{ form_error(offer_error) }}
+    {% if open_for_offers %}
+      <form method="post" action="/tenders/{{ tender.id }}/offers" class="row g-2 align-items-end" novalidate data-testid="offer-form">
+        <div class="col-md-5">
+          <label for="offer-provider" class="form-label">Proveedor</label>
+          <select id="offer-provider" name="provider_id" class="form-select" data-testid="offer-provider-input">
+            <option value="">Seleccione…</option>
+            {% for p in providers %}<option value="{{ p.id }}"{{ ' selected' if offer_form.provider_id == p.id | string }}>{{ p.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="offer-amount" class="form-label">Monto (CRC)</label>
+          <input type="text" inputmode="decimal" id="offer-amount" name="amount" class="form-control" value="{{ offer_form.amount }}"
+                 placeholder="9000000.00" data-testid="offer-amount-input">
+        </div>
+        <div class="col-md-3"><button type="submit" class="btn btn-primary w-100" data-testid="offer-submit">Registrar oferta</button></div>
+      </form>
+    {% else %}
+      <p class="text-muted mb-0" data-testid="offers-closed-note">Esta licitación no acepta ofertas ({{ 'vencida' if is_expired(tender) else tender.status | lower }}).</p>
+    {% endif %}
+  </div>
+</div>
