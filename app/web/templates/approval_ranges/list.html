@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Rangos de aprobación{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 fw-bold mb-0">Rangos de aprobación</h1>
+  <a href="/approval-ranges/new" class="btn btn-primary" data-testid="approval-range-new">Nuevo rango</a>
+</div>
+<p class="text-muted small">Intervalos semiabiertos [mínimo, máximo) en colones: el mínimo se incluye y el máximo no. Sin máximo = sin tope.</p>
+
+<div class="card app-card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-testid="approval-ranges-table">
+      <thead class="table-light">
+        <tr><th>Nivel</th><th class="text-end">Mínimo (incluido)</th><th class="text-end">Máximo (excluido)</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for r in ranges %}
+        <tr data-testid="approval-range-row-{{ r.id }}">
+          <td data-testid="approval-range-level-{{ r.id }}">{{ r.level }}</td>
+          <td class="text-end text-nowrap" data-testid="approval-range-min-{{ r.id }}">{{ r.min_cents | format_display('CRC') }}</td>
+          <td class="text-end text-nowrap" data-testid="approval-range-max-{{ r.id }}">{% if r.max_cents is none %}Sin tope{% else %}{{ r.max_cents | format_display('CRC') }}{% endif %}</td>
+          <td class="text-end text-nowrap">
+            <a href="/approval-ranges/{{ r.id }}/edit" class="btn btn-sm btn-outline-secondary" data-testid="approval-range-edit-{{ r.id }}">Editar</a>
+            <form method="post" action="/approval-ranges/{{ r.id }}/delete" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-outline-danger" data-testid="approval-range-delete-{{ r.id }}">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4" data-testid="approval-ranges-empty">No hay rangos configurados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
