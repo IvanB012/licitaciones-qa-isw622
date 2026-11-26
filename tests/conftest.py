@@ -1,6 +1,8 @@
 """Fixtures compartidas: BD temporal limpia por prueba, FakeClock, proveedor de cambio que falla, cliente y seed."""
 from datetime import datetime, timezone
 
+import socket
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -13,6 +15,29 @@ from seeds.seed import SEED_USERS, seed_reference_data
 
 ADMIN = (SEED_USERS[0][0], SEED_USERS[0][1])
 OPERADOR = (SEED_USERS[1][0], SEED_USERS[1][1])
+
+
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "", None}
+
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    """Las pruebas NUNCA tocan la red: resolver o conectar a un host que no sea local falla de inmediato."""
+    real_getaddrinfo, real_connect = socket.getaddrinfo, socket.socket.connect
+
+    def guarded_getaddrinfo(host, *args, **kwargs):
+        if host not in _LOCAL_HOSTS:
+            raise OSError(f"red bloqueada en pruebas: {host}")
+        return real_getaddrinfo(host, *args, **kwargs)
+
+    def guarded_connect(self, address):
+        host = address[0] if isinstance(address, tuple) else address
+        if isinstance(host, str) and host not in _LOCAL_HOSTS:
+            raise OSError(f"red bloqueada en pruebas: {host}")
+        return real_connect(self, address)
+
+    monkeypatch.setattr(socket, "getaddrinfo", guarded_getaddrinfo)
+    monkeypatch.setattr(socket.socket, "connect", guarded_connect)
 
 
 @pytest.fixture

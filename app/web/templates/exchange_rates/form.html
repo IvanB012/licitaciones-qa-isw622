@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% set editing = rate_row is not none %}
+{% block title %}{{ 'Editar tipo de cambio' if editing else 'Nuevo tipo de cambio' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h3 fw-bold mb-3">{{ 'Editar tipo de cambio' if editing else 'Nuevo tipo de cambio' }}</h1>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        {{ form_error(error) }}
+        {% if notice %}<div class="alert alert-warning py-2" role="alert" data-testid="suggest-notice">{{ notice }}</div>{% endif %}
+        <form method="post" action="{{ '/exchange-rates/%d/edit' % rate_row.id if editing else '/exchange-rates/new' }}" novalidate data-testid="exchange-rate-form">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="rate" class="form-label">Colones por USD</label>
+              <input type="text" inputmode="decimal" class="form-control" id="rate" name="rate" value="{{ form.rate }}"
+                     placeholder="500.00" required data-testid="exchange-rate-rate-input">
+              <div class="form-text">Solo dígitos, punto decimal y hasta 4 decimales.</div>
+            </div>
+            <div class="col-md-6">
+              <label for="rate_date" class="form-label">Fecha de la tasa</label>
+              <input type="date" class="form-control" id="rate_date" name="rate_date" value="{{ form.rate_date }}" required data-testid="exchange-rate-date-input">
+              <div class="form-text">Debe ser la fecha oficial del sistema.</div>
+            </div>
+          </div>
+          {% if not editing %}<input type="hidden" name="source" value="{{ form.source }}" data-testid="exchange-rate-source-input">{% endif %}
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-testid="exchange-rate-submit">{{ 'Guardar cambios' if editing else 'Guardar' }}</button>
+            {% if not editing %}
+            <button type="submit" formaction="/exchange-rates/suggest" formnovalidate class="btn btn-outline-primary" data-testid="exchange-rate-suggest">Sugerir tasa</button>
+            {% endif %}
+            <a href="/exchange-rates" class="btn btn-outline-secondary" data-testid="exchange-rate-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

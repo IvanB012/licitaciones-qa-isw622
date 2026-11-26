@@ -29,7 +29,8 @@ Con el entorno virtual activado y `.env` creado:
 python -m seeds.seed --reset          # primera vez: crea la BD con los datos de referencia
 uvicorn app.main:app --reload         # http://127.0.0.1:8000  (API docs en /docs si ENV != prod)
 ```
-Variables (`.env`): `DATABASE_URL`, `SECRET_KEY`, `ENV` (ver `.env.example`).
+Variables (`.env`): `DATABASE_URL`, `SECRET_KEY`, `ENV`, `EXCHANGE_RATE_URL` (ver `.env.example`).
+`EXCHANGE_RATE_URL` es el servicio externo del botón "Sugerir tasa" (default `https://open.er-api.com/v6/latest/USD`, se lee `rates["CRC"]`, timeout 3 s). Con `ENV=test` nunca se consulta; si el servicio falla se usa la última tasa guardada o 500.00.
 
 ## Cómo resetear la BD
 ```powershell

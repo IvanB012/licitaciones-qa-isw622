@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Tipo de cambio{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 fw-bold mb-0">Tipo de cambio</h1>
+  <a href="/exchange-rates/new" class="btn btn-primary" data-testid="exchange-rate-new">Nueva tasa</a>
+</div>
+
+<div class="alert alert-info" data-testid="current-rate-box">
+  Tasa vigente: <strong>₡<span data-testid="current-rate">{{ current.text }}</span></strong> por USD
+  · fecha: <span data-testid="current-rate-date">{{ current.rate_date.strftime('%d/%m/%Y') }}</span>
+  · fuente: <span data-testid="current-rate-source">{{ current.source }}</span>
+</div>
+
+<div class="card app-card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-testid="exchange-rates-table">
+      <thead class="table-light">
+        <tr><th class="text-end">CRC por USD</th><th>Fecha</th><th>Fuente</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for r in rates %}
+        <tr data-testid="exchange-rate-row-{{ r.id }}">
+          <td class="text-end" data-testid="exchange-rate-value-{{ r.id }}">{{ rate_text(r) }}</td>
+          <td data-testid="exchange-rate-date-{{ r.id }}">{{ r.rate_date.strftime('%d/%m/%Y') }}</td>
+          <td data-testid="exchange-rate-source-{{ r.id }}">{{ r.source }}</td>
+          <td class="text-end text-nowrap">
+            <a href="/exchange-rates/{{ r.id }}/edit" class="btn btn-sm btn-outline-secondary" data-testid="exchange-rate-edit-{{ r.id }}">Editar</a>
+            <form method="post" action="/exchange-rates/{{ r.id }}/delete" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-outline-danger" data-testid="exchange-rate-delete-{{ r.id }}">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4" data-testid="exchange-rates-empty">No hay tasas guardadas (se usa ₡500.00 por USD).</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

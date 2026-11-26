@@ -16,7 +16,7 @@ from app.clock import Clock, SystemClock
 from app.config import Settings, get_settings
 from app.db import create_tables, make_engine, make_session_factory
 from app.errors import register_error_handlers
-from app.exchange import ExchangeRateProvider, FailingExchangeRateProvider
+from app.exchange import ExchangeRateProvider, FailingExchangeRateProvider, HttpExchangeRateProvider
 from app.web import web_router
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -30,7 +30,7 @@ def create_app(
     rate_provider: ExchangeRateProvider | None = None,
 ) -> FastAPI:
     """Crea la app. Todo lo inyectable tiene un valor por defecto seguro:
-    BD de settings.database_url, SystemClock y un proveedor de tipo de cambio que falla (sin red).
+    BD de settings.database_url, SystemClock y proveedor de tipo de cambio HTTP (ENV=test: uno que falla, sin red).
     """
     settings = settings or get_settings()
     engine = engine or make_engine(settings.database_url)
@@ -46,7 +46,13 @@ def create_app(
     app.state.engine = engine
     app.state.session_factory = make_session_factory(engine)
     app.state.clock = clock or SystemClock()
-    app.state.rate_provider = rate_provider or FailingExchangeRateProvider()
+    if rate_provider is None:  # app real: proveedor HTTP; ENV=test: siempre el que falla (sin red)
+        rate_provider = (
+            FailingExchangeRateProvider()
+            if settings.env.lower() == "test"
+            else HttpExchangeRateProvider(settings.exchange_rate_url)
+        )
+    app.state.rate_provider = rate_provider
 
     app.add_middleware(
         SessionMiddleware,
