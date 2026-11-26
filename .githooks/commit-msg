@@ -1,0 +1,27 @@
+#!/bin/sh
+# Hook commit-msg (Git Bash). Activar con: git config core.hooksPath .githooks
+# Formato: tipo(módulo): descripción   con tipo en feat|fix|test|docs|chore|refactor
+msgfile="$1"
+
+# Primera línea que no sea comentario ni vacía
+first=$(grep -v '^#' "$msgfile" | sed '/^[[:space:]]*$/d' | head -n 1)
+
+# Permitir merges automáticos de git
+case "$first" in
+  "Merge "*) exit 0 ;;
+esac
+
+if grep -v '^#' "$msgfile" | grep -qiE 'co-authored-by|claude'; then
+  echo "ERROR: el mensaje no puede contener 'Co-Authored-By' ni 'Claude' (sin distinguir mayúsculas)." >&2
+  echo "La IA se declara en 05_IA/ y en el Excel, no en git." >&2
+  exit 1
+fi
+
+if ! printf '%s' "$first" | grep -qE '^(feat|fix|test|docs|chore|refactor)\([a-z0-9_-]+\): .+'; then
+  echo "ERROR: formato de commit inválido." >&2
+  echo "  Esperado: tipo(módulo): descripción   (tipo = feat|fix|test|docs|chore|refactor)" >&2
+  echo "  Ejemplo:  feat(ofertas): rechazar oferta exactamente en el cierre" >&2
+  echo "  Recibido: $first" >&2
+  exit 1
+fi
+exit 0
