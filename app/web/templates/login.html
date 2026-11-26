@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+    <div class="text-center mb-4">
+      <h1 class="h3 fw-bold mb-1">Licitaciones</h1>
+      <p class="text-muted mb-0">Inicie sesión para continuar</p>
+    </div>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        {{ form_error(error) }}
+        <form method="post" action="/login" novalidate data-testid="login-form">
+          <div class="mb-3">
+            <label for="username" class="form-label">Usuario</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ username }}"
+                   autocomplete="username" autofocus required data-testid="login-username-input">
+          </div>
+          <div class="mb-4">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="password" name="password"
+                   autocomplete="current-password" required data-testid="login-password-input">
+          </div>
+          <button type="submit" class="btn btn-primary w-100" data-testid="login-submit">Ingresar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

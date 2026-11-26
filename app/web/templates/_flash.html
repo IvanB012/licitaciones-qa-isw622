@@ -1,0 +1,8 @@
+{# Mensajes flash: data-testid="flash-success" | "flash-error" | "flash-info" | "flash-warning" #}
+{% for category, message in flashes %}
+  {% set klass = {'success': 'success', 'error': 'danger', 'warning': 'warning', 'info': 'info'}.get(category, 'secondary') %}
+  <div class="alert alert-{{ klass }} alert-dismissible fade show" role="alert" data-testid="flash-{{ category }}">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+{% endfor %}

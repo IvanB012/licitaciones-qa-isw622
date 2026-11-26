@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Panel{% endblock %} · Licitaciones</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='vendor/bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+{% if current_user %}
+  {% set path = request.url.path %}
+  {% set nav = [
+    ('/', 'Panel', 'nav-dashboard', false),
+    ('/providers', 'Proveedores', 'nav-providers', false),
+    ('/tenders', 'Licitaciones', 'nav-tenders', false),
+    ('/exchange-rates', 'Tipo de cambio', 'nav-exchange-rates', false),
+    ('/approval-ranges', 'Rangos de aprobación', 'nav-approval-ranges', true),
+    ('/users', 'Usuarios', 'nav-users', true),
+  ] %}
+  <nav class="navbar navbar-expand-lg navbar-dark app-navbar" data-testid="navbar">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="/" data-testid="nav-brand">Licitaciones</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+              aria-controls="mainNav" aria-expanded="false" aria-label="Mostrar menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto">
+          {% for href, label, testid, admin_only in nav %}
+            {% if not admin_only or current_user.role == 'admin' %}
+              {% set active = (path == '/') if href == '/' else path.startswith(href) %}
+              <li class="nav-item">
+                <a class="nav-link{{ ' active' if active }}" href="{{ href }}" data-testid="{{ testid }}"
+                   {% if active %}aria-current="page"{% endif %}>{{ label }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Moneda de visualización" data-testid="currency-toggle">
+            <a class="btn btn-outline-light{{ ' active' if currency == 'CRC' }}" href="?currency=CRC" data-testid="currency-crc">CRC</a>
+            <a class="btn btn-outline-light{{ ' active' if currency == 'USD' }}" href="?currency=USD" data-testid="currency-usd">USD</a>
+          </div>
+          <span class="navbar-text text-white-50" data-testid="nav-user">
+            {{ current_user.username }}
+            <span class="badge text-bg-light ms-1">{{ current_user.role }}</span>
+          </span>
+          <form method="post" action="/logout" class="m-0">
+            <button type="submit" class="btn btn-sm btn-light" data-testid="logout-button">Cerrar sesión</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+{% endif %}
+
+<main class="container py-4 flex-grow-1">
+  {% include "_flash.html" %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="app-footer text-center text-muted small py-3">
+  Sistema de Gestión de Licitaciones · ISW-622
+</footer>
+
+<script src="{{ url_for('static', path='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

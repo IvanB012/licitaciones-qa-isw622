@@ -24,31 +24,39 @@ git config core.hooksPath .githooks
 El último comando activa el hook `commit-msg` (formato `tipo(módulo): descripción`, sin coautoría de IA).
 
 ## Cómo ejecutar
-<!-- Completar cuando exista app/main.py -->
+Con el entorno virtual activado y `.env` creado:
 ```powershell
-uvicorn app.main:app --reload
+python -m seeds.seed --reset          # primera vez: crea la BD con los datos de referencia
+uvicorn app.main:app --reload         # http://127.0.0.1:8000  (API docs en /docs si ENV != prod)
 ```
+Variables (`.env`): `DATABASE_URL`, `SECRET_KEY`, `ENV` (ver `.env.example`).
 
 ## Cómo resetear la BD
-<!-- Completar -->
 ```powershell
 python -m seeds.seed --reset
 ```
+Borra todas las tablas y deja la BD en el estado de referencia (2 usuarios, 3 rangos de aprobación, tasa 500, proveedores P1/P2, licitación LIC-2026-001 con sus 2 ofertas). Sin `--reset` solo siembra si la BD está vacía.
 
 ## Usuarios de prueba (sintéticos)
-<!-- Completar con los usuarios del seed (ver docs/contrato.md §8) -->
+| Usuario | Contraseña | Rol |
+|---|---|---|
+| `admin` | `Admin#2026-test` | admin |
+| `operador` | `Operador#2026-test` | operador |
 
 ## Cómo correr los tests
 ```powershell
+pytest                    # unit + api (e2e cuando existan)
 pytest tests/unit tests/api
-pytest tests/e2e          # requiere la app y chromium
+pytest tests/e2e          # requiere chromium (playwright install chromium)
 pytest --cov=app
 ```
+Cada prueba usa una BD SQLite temporal limpia, `FakeClock` y un proveedor de tipo de cambio que falla (nunca hay red).
 
 ## Estructura de carpetas
 ```
-app/        rules/ services/ api/ web/ static/ templates/
-tests/      unit/ api/ e2e/
+app/        config.py db.py models.py clock.py exchange.py errors.py deps.py main.py
+            rules/ services/ api/ web/ (plantillas en web/templates) static/ (vendor/bootstrap local)
+tests/      unit/ api/ e2e/   (conftest.py con las fixtures)
 seeds/      seed.py
 docs/       contrato.md
 postman/    colección de la API
