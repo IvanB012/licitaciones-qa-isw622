@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge %}
+{% block title %}{{ tender.code }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <a href="/tenders" class="small text-decoration-none" data-testid="tender-back">&larr; Licitaciones</a>
+    <h1 class="h3 fw-bold mb-0 mt-1"><span data-testid="tender-detail-code">{{ tender.code }}</span></h1>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if tender.status == 'Borrador' %}
+      <a href="/tenders/{{ tender.id }}/edit" class="btn btn-outline-secondary" data-testid="tender-edit">Editar</a>
+      <form method="post" action="/tenders/{{ tender.id }}/publish" class="m-0"><button type="submit" class="btn btn-success" data-testid="tender-publish">Publicar</button></form>
+    {% endif %}
+    {% if tender.status != 'Cerrada' %}
+      <form method="post" action="/tenders/{{ tender.id }}/close" class="m-0"><button type="submit" class="btn btn-dark" data-testid="tender-close">Cerrar</button></form>
+    {% endif %}
+    {% if tender.status == 'Borrador' %}
+      <form method="post" action="/tenders/{{ tender.id }}/delete" class="m-0"><button type="submit" class="btn btn-outline-danger" data-testid="tender-delete">Eliminar</button></form>
+    {% endif %}
+  </div>
+</div>
+
+{% if currency == 'USD' %}
+<div class="alert alert-info py-2" data-testid="rate-info">
+  Importes en USD a ₡{{ rate.text }} por USD (fecha de la tasa: {{ rate.rate_date.strftime('%d/%m/%Y') }}). Solo cambia la vista; los datos siguen en CRC.
+</div>
+{% endif %}
+
+<div class="card app-card">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Título</dt><dd class="col-sm-9" data-testid="tender-detail-title">{{ tender.title }}</dd>
+      <dt class="col-sm-3">Descripción</dt><dd class="col-sm-9" data-testid="tender-detail-description">{{ tender.description or '—' }}</dd>
+      <dt class="col-sm-3">Presupuesto</dt>
+      <dd class="col-sm-9" data-testid="tender-detail-budget">{{ tender.budget_cents | format_display(currency, rate.rate) }}</dd>
+      <dt class="col-sm-3">Cierre (hora CR)</dt><dd class="col-sm-9" data-testid="tender-detail-closes-at">{{ tender.closes_at | cr_datetime }}</dd>
+      <dt class="col-sm-3">Estado</dt>
+      <dd class="col-sm-9">
+        {{ status_badge(tender.status) }}
+        {% if is_expired(tender) %}<span class="badge text-bg-warning" data-testid="expired-badge">vencida: ya no acepta ofertas</span>{% endif %}
+      </dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

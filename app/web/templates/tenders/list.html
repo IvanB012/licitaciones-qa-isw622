@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge %}
+{% block title %}Licitaciones{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 fw-bold mb-0">Licitaciones</h1>
+  <a href="/tenders/new" class="btn btn-primary" data-testid="tender-new">Nueva licitación</a>
+</div>
+
+{% if currency == 'USD' %}
+<div class="alert alert-info py-2" data-testid="rate-info">
+  Importes en USD a ₡{{ rate.text }} por USD (fecha de la tasa: {{ rate.rate_date.strftime('%d/%m/%Y') }}). Solo cambia la vista; los datos siguen en CRC.
+</div>
+{% endif %}
+
+<form method="get" action="/tenders" class="row g-2 align-items-end mb-3" data-testid="tender-filter-form">
+  <div class="col-auto">
+    <label for="status" class="form-label small mb-1">Estado</label>
+    <select id="status" name="status" class="form-select form-select-sm" data-testid="tender-status-filter">
+      <option value="">Todos</option>
+      {% for s in statuses %}<option value="{{ s }}"{{ ' selected' if s == status_filter }}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button type="submit" class="btn btn-sm btn-outline-secondary" data-testid="tender-filter-submit">Filtrar</button></div>
+</form>
+
+<div class="card app-card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-testid="tenders-table">
+      <thead class="table-light">
+        <tr><th>Código</th><th>Título</th><th class="text-end">Presupuesto</th><th>Cierre (hora CR)</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for t in tenders %}
+        <tr data-testid="tender-row-{{ t.id }}">
+          <td data-testid="tender-code-{{ t.id }}">{{ t.code }}</td>
+          <td>{{ t.title }}</td>
+          <td class="text-end text-nowrap">{{ t.budget_cents | format_display(currency, rate.rate) }}</td>
+          <td class="text-nowrap">{{ t.closes_at | cr_datetime }}</td>
+          <td>
+            {{ status_badge(t.status) }}
+            {% if is_expired(t) %}<span class="badge text-bg-warning" data-testid="expired-badge">vencida</span>{% endif %}
+          </td>
+          <td class="text-end text-nowrap">
+            <a href="/tenders/{{ t.id }}" class="btn btn-sm btn-outline-primary" data-testid="tender-view-{{ t.id }}">Ver</a>
+            {% if t.status == 'Borrador' %}
+            <a href="/tenders/{{ t.id }}/edit" class="btn btn-sm btn-outline-secondary" data-testid="tender-edit-{{ t.id }}">Editar</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4" data-testid="tenders-empty">No hay licitaciones.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
