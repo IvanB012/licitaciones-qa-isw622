@@ -122,12 +122,12 @@ Tipos: `money` = string decimal; `dt` = ISO UTC.
 Orden de validación en crear oferta: existe licitación → existe proveedor → estado Publicada → no vencida → formato/monto → duplicado. La BD respalda con UNIQUE/CHECK (violación → mismo 409/422, nunca 500).
 
 ### Tipo de cambio (REQ-010)
-| POST `/api/exchange-rates` | `{rate:money-like >0, rate_date?}` | 201 `{id,rate,rate_date,source:"manual"}`; 422 `tasa_invalida` (<=0, formato). `rate_date` por defecto = fecha del Clock; debe ser la oficial (otra fecha → 422) |
+| POST `/api/exchange-rates` | `{rate:money-like >0, rate_date?, source?}` | 201 `{id,rate,rate_date,source}` (`source` opcional `"manual"` (defecto) \| `"sugerida"`); 422 `tasa_invalida` (<=0, formato, >4 decimales, fuente inválida). `rate_date` por defecto = fecha del Clock; debe ser la oficial (otra fecha → 422) |
 | GET `/api/exchange-rates` | — | 200 lista (más reciente primero) |
 | GET `/api/exchange-rates/current` | — | 200 `{rate,rate_date,source}`; respaldo última guardada, si no hay → 500.00 `source:"seed"` |
 | GET `/api/exchange-rates/suggest` | — | 200 `{rate,source:"externo"}` **solo sugiere, no guarda**; si el proveedor falla → 200 `{rate:<respaldo>,source:"respaldo",aviso}` |
 | GET `/api/exchange-rates/{id}` | — | 200; 404 |
-| PUT `/api/exchange-rates/{id}` | `{rate,rate_date}` | 200; 404; 422 |
+| PUT `/api/exchange-rates/{id}` | `{rate,rate_date?}` | 200; 404; 422 `tasa_invalida`. La fecha debe ser la oficial o la que el registro ya tenía; la fuente no cambia |
 | DELETE `/api/exchange-rates/{id}` | — | 204; 404 |
 
 ### Rangos de aprobación (REQ-009)
@@ -203,3 +203,4 @@ Se inyectan vía dependencias de FastAPI (`get_clock`, `get_rate_provider`), sob
 3. "Cerrada" es manual; una Publicada vencida sigue Publicada (vista "vencida") y rechaza ofertas.
 4. Reglas de borrado y de edición (§5, §10) y orden de validación de ofertas.
 5. Tasa guardada ×10 000 como entero; hora CR (UTC−6) solo en presentación.
+6. Tipo de cambio: `POST /api/exchange-rates` acepta `source` opcional (`manual` por defecto | `sugerida`); `seed` no se puede indicar. En la UI, "Sugerir tasa" es un POST a `/exchange-rates/suggest` que re-renderiza el formulario (sin JavaScript) con la tasa sugerida (`source` oculto = `sugerida`) o con la de respaldo y un aviso (`manual`). `HttpExchangeRateProvider` (httpx, 3 s, `EXCHANGE_RATE_URL`) solo se usa con `ENV` distinto de `test`. Al editar una tasa se admite conservar su fecha anterior. Tasas con más de 63 bits al escalar ×10 000 se rechazan (`tasa_invalida`).
