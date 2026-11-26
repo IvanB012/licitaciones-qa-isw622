@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% set editing = provider is not none %}
+{% block title %}{{ 'Editar proveedor' if editing else 'Nuevo proveedor' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h3 fw-bold mb-3">{{ 'Editar proveedor' if editing else 'Nuevo proveedor' }}</h1>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        {{ form_error(error) }}
+        <form method="post" action="{{ '/providers/%d/edit' % provider.id if editing else '/providers/new' }}" novalidate data-testid="provider-form">
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="name" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="name" name="name" value="{{ form.name }}" required data-testid="provider-name-input">
+              <div class="form-text">Letras (con tildes y ñ), números, espacios, punto, coma y paréntesis.</div>
+            </div>
+            <div class="col-12">
+              <label for="contact_email" class="form-label">Correo de contacto <span class="text-muted small">(opcional)</span></label>
+              <input type="text" inputmode="email" class="form-control" id="contact_email" name="contact_email" value="{{ form.contact_email }}" data-testid="provider-email-input">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-testid="provider-submit">{{ 'Guardar cambios' if editing else 'Crear proveedor' }}</button>
+            <a href="/providers" class="btn btn-outline-secondary" data-testid="provider-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
