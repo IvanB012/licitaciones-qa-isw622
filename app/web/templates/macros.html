@@ -1,0 +1,14 @@
+{# Macros compartidas. Uso: {% from "macros.html" import status_badge, field_error %} #}
+
+{# Badge de estado de licitación (REQ-003). data-testid="status-badge" #}
+{% macro status_badge(status) %}
+  {% set klass = {'Borrador': 'secondary', 'Publicada': 'success', 'Cerrada': 'dark'}.get(status, 'light') %}
+  <span class="badge text-bg-{{ klass }}" data-testid="status-badge">{{ status }}</span>
+{% endmacro %}
+
+{# Error de formulario/validación. data-testid="error-message" #}
+{% macro form_error(message) %}
+  {% if message %}
+    <div class="alert alert-danger py-2" role="alert" data-testid="error-message">{{ message }}</div>
+  {% endif %}
+{% endmacro %}

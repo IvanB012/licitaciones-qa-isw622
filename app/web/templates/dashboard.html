@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge %}
+{% block title %}Panel{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="h3 fw-bold mb-1">Panel</h1>
+  <p class="text-muted mb-0" data-testid="welcome-message">
+    Hola, {{ user.username }}. Su rol es <span class="badge text-bg-secondary">{{ user.role }}</span>.
+  </p>
+</div>
+
+<div class="row g-3 mb-4">
+  {% for testid, label, value in [
+      ('stat-providers', 'Proveedores', summary.providers),
+      ('stat-tenders', 'Licitaciones', summary.tenders),
+      ('stat-published', 'Publicadas', summary.published_tenders),
+      ('stat-offers', 'Ofertas', summary.offers)] %}
+  <div class="col-6 col-lg-3">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <div class="text-muted small text-uppercase">{{ label }}</div>
+        <div class="display-6 fw-semibold" data-testid="{{ testid }}">{{ value }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card app-card">
+  <div class="card-header bg-white fw-semibold">Licitaciones recientes</div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-testid="recent-tenders-table">
+      <thead class="table-light">
+        <tr><th>Código</th><th>Título</th><th>Estado</th><th>Cierre (hora CR)</th></tr>
+      </thead>
+      <tbody>
+        {% for t in summary.recent_tenders %}
+        <tr data-testid="tender-row-{{ t.id }}">
+          <td>{{ t.code }}</td>
+          <td>{{ t.title }}</td>
+          <td>{{ status_badge(t.status) }}</td>
+          <td>{{ t.closes_at | cr_datetime }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4" data-testid="recent-tenders-empty">No hay licitaciones registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
