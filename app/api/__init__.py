@@ -5,11 +5,12 @@
 """
 from fastapi import APIRouter
 
-from app.api import auth, exchange_rates, health, offers, providers, tenders
+from app.api import approval_ranges, auth, exchange_rates, health, offers, providers, tenders
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
+api_router.include_router(approval_ranges.router)
 api_router.include_router(exchange_rates.router)
 api_router.include_router(providers.router)
 api_router.include_router(tenders.router)

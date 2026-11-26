@@ -8,10 +8,11 @@ sin sesión el handler de errores redirige a /login.
 """
 from fastapi import APIRouter
 
-from app.web import exchange_rates, offers, pages, providers, tenders
+from app.web import approval_ranges, exchange_rates, offers, pages, providers, tenders
 
 web_router = APIRouter()
 web_router.include_router(pages.router)
+web_router.include_router(approval_ranges.router)
 web_router.include_router(exchange_rates.router)
 web_router.include_router(providers.router)
 web_router.include_router(tenders.router)

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% set editing = range_row is not none %}
+{% block title %}{{ 'Editar rango' if editing else 'Nuevo rango' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h3 fw-bold mb-3">{{ 'Editar rango de aprobación' if editing else 'Nuevo rango de aprobación' }}</h1>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        {{ form_error(error) }}
+        <form method="post" action="{{ '/approval-ranges/%d/edit' % range_row.id if editing else '/approval-ranges/new' }}" novalidate data-testid="approval-range-form">
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="level" class="form-label">Nivel</label>
+              <select id="level" name="level" class="form-select" data-testid="approval-range-level-input">
+                <option value="">Seleccione…</option>
+                {% for lv in levels %}<option value="{{ lv }}"{{ ' selected' if lv == form.level }}>{{ lv }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="min" class="form-label">Mínimo (CRC, incluido)</label>
+              <input type="text" inputmode="decimal" class="form-control" id="min" name="min" value="{{ form.min }}" placeholder="1000000.00" required data-testid="approval-range-min-input">
+            </div>
+            <div class="col-md-6">
+              <label for="max" class="form-label">Máximo (CRC, excluido) <span class="text-muted small">(vacío = sin tope)</span></label>
+              <input type="text" inputmode="decimal" class="form-control" id="max" name="max" value="{{ form.max }}" placeholder="10000000.00" data-testid="approval-range-max-input">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-testid="approval-range-submit">{{ 'Guardar cambios' if editing else 'Crear rango' }}</button>
+            <a href="/approval-ranges" class="btn btn-outline-secondary" data-testid="approval-range-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
