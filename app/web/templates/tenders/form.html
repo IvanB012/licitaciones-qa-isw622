@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% set editing = tender is not none %}
+{% block title %}{{ 'Editar licitación' if editing else 'Nueva licitación' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h3 fw-bold mb-3">{{ 'Editar licitación' if editing else 'Nueva licitación' }}</h1>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        {{ form_error(error) }}
+        <form method="post" action="{{ '/tenders/%d/edit' % tender.id if editing else '/tenders/new' }}" novalidate data-testid="tender-form">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="code" class="form-label">Código</label>
+              <input type="text" class="form-control" id="code" name="code" value="{{ form.code }}" required data-testid="tender-code-input">
+            </div>
+            <div class="col-md-8">
+              <label for="title" class="form-label">Título</label>
+              <input type="text" class="form-control" id="title" name="title" value="{{ form.title }}" required data-testid="tender-title-input">
+            </div>
+            <div class="col-12">
+              <label for="description" class="form-label">Descripción <span class="text-muted small">(opcional)</span></label>
+              <textarea class="form-control" id="description" name="description" rows="3" data-testid="tender-description-input">{{ form.description }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="budget" class="form-label">Presupuesto (CRC)</label>
+              <input type="text" inputmode="decimal" class="form-control" id="budget" name="budget" value="{{ form.budget }}"
+                     placeholder="10000000.00" required data-testid="tender-budget-input">
+              <div class="form-text">Solo dígitos, punto decimal y hasta 2 decimales.</div>
+            </div>
+            <div class="col-md-6">
+              <label for="closes_at" class="form-label">Cierre (hora de Costa Rica)</label>
+              <input type="datetime-local" class="form-control" id="closes_at" name="closes_at" value="{{ form.closes_at }}" required data-testid="tender-closes-at-input">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-testid="tender-submit">{{ 'Guardar cambios' if editing else 'Crear licitación' }}</button>
+            <a href="{{ '/tenders/%d' % tender.id if editing else '/tenders' }}" class="btn btn-outline-secondary" data-testid="tender-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

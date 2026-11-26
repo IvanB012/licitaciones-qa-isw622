@@ -24,7 +24,9 @@ templates.env.filters["format_display"] = format_display
 
 def flash(request: Request, category: str, message: str) -> None:
     """Mensaje para la próxima página. category: success | error | info | warning."""
-    request.session.setdefault("_flashes", []).append([category, message])
+    # Reasignar (no mutar en el lugar): así la sesión se marca como modificada y la cookie se reenvía
+    # aunque ya hubiera un mensaje pendiente.
+    request.session["_flashes"] = [*request.session.get("_flashes", []), [category, message]]
 
 
 def get_currency(request: Request) -> str:
