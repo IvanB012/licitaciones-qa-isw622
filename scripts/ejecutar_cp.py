@@ -1,6 +1,6 @@
 """Ejecuta CP automáticos con pytest sobre el commit actual y escribe la evidencia en 04_Evidencias/.
 
-Uso:  python run_cp.py <repo> <salida_json>
+Uso:  python ejecutar_cp.py <repo> <salida_json> [CP-### ...]   (sin ids ejecuta todos; volver a ejecutar un CP sobrescribe su evidencia)
 Los veredictos salen de la salida real de pytest: código de retorno, cada test pedido en PASSED y ninguno en FAILED.
 """
 import datetime
@@ -20,6 +20,12 @@ OUT.mkdir(exist_ok=True)
 U = "tests/unit/test_offer_rules.py"
 A = "tests/api/test_offers_api.py"
 M = "tests/unit/test_models.py"
+TR = "tests/unit/test_tender_rules.py"
+ER = "tests/unit/test_evaluation_rules.py"
+EA = "tests/api/test_evaluation_api.py"
+TA = "tests/api/test_tenders_api.py"
+TUI = "tests/api/test_tenders_ui.py"
+FE = "tests/api/test_errors_format.py"
 
 CASOS = [
     {
@@ -56,6 +62,56 @@ CASOS = [
         "nota": "El último test no figura en la ficha del catálogo. Se agregó porque el resultado esperado exige que NO se guarde ninguna oferta (comprueba que el conteo de ofertas no cambia tras enviar 0 y un negativo por el formulario). "
         "Además, los valores literales -0.01 y -1000000.00 se prueban en la regla pura (unitaria); en la API los negativos probados son -1 y -900000.00 (misma clase de equivalencia).",
     },
+    {
+        "run": "RUN-055", "ev": "EV-059", "cp": "CP-004", "req": "REQ-003", "archivo": "EV-059_CP-004_transiciones_de_estado.txt",
+        "titulo": "Transiciones de estado de la licitación",
+        "entradas": "Borrador->Publicada y Publicada->Cerrada (válidas); Cerrada->Publicada y Publicada->Borrador (inválidas). También Borrador->Cerrada (válida).",
+        "esperado": "Borrador->Publicada, Borrador->Cerrada y Publicada->Cerrada se permiten; Cerrada->Publicada y Publicada->Borrador se rechazan con 409 transicion_invalida. (REQ-003)",
+        "nodos": [f"{TR}::test_transiciones_validas", f"{TR}::test_transiciones_invalidas", f"{TA}::test_no_se_reabre_una_cerrada_409"],
+    },
+    {
+        "run": "RUN-056", "ev": "EV-060", "cp": "CP-005", "req": "REQ-008", "archivo": "EV-060_CP-005_ahorro_y_clasificacion.txt",
+        "titulo": "Ahorro y clasificación en el escenario aislado",
+        "entradas": "presupuesto CRC 1 000 000,00; ofertas 900000.00, 950000.00 y 1000000.00.",
+        "esperado": "900 000 -> 10 % Conveniente; 950 000 -> 5 % Aceptable; 1 000 000 -> 0 % Válida sin ahorro. (REQ-008: >= 10 % Conveniente; > 0 y < 10 % Aceptable; 0 % Válida sin ahorro)",
+        "nodos": [f"{ER}::test_escenario_aislado_10_5_y_0_por_ciento", f"{ER}::test_clasificacion_en_la_frontera_del_diez_por_ciento"],
+    },
+    {
+        "run": "RUN-057", "ev": "EV-061", "cp": "CP-006", "req": "REQ-009", "archivo": "EV-061_CP-006_aprobador_fronteras.txt",
+        "titulo": "Nivel de aprobación en las fronteras de los rangos",
+        "entradas": "montos 999999.99, 1000000.00 y 10000000.00 con los rangos por defecto.",
+        "esperado": "999 999,99 -> Encargado de área; 1 000 000,00 -> Gerencia; 10 000 000,00 -> Junta Directiva. (REQ-009: intervalos semiabiertos [min, max))",
+        "nodos": [f"{ER}::test_aprobador_por_rango", f"{EA}::test_aprobador_en_las_fronteras_de_los_rangos"],
+    },
+    {
+        "run": "RUN-058", "ev": "EV-062", "cp": "CP-008", "req": "REQ-006", "archivo": "EV-062_CP-008_oferta_duplicada.txt",
+        "titulo": "Segunda oferta del mismo proveedor en la misma licitación",
+        "entradas": "POST /api/tenders/{L1}/offers con provider_id = P1 (que ya ofertó en L1) y monto 8000000.00; repetido saltándose el chequeo del service.",
+        "esperado": "HTTP 409 {\"error\": \"oferta_duplicada\", \"detalle\": ...}; la oferta original no cambia; la restricción UNIQUE (licitación, proveedor) de la BD también la rechaza. (REQ-006)",
+        "nodos": [
+            f"{A}::test_proveedor_no_puede_ofertar_dos_veces", f"{A}::test_la_bd_tambien_rechaza_el_duplicado",
+            f"{M}::test_oferta_unica_por_proveedor_y_licitacion", f"{A}::test_el_duplicado_no_altera_la_oferta_original",
+        ],
+        "nota": "El último test no figura en la ficha del catálogo. Se agregó porque el resultado esperado exige que la oferta original no cambie y los tres tests listados no lo comprueban.",
+    },
+    {
+        "run": "RUN-059", "ev": "EV-063", "cp": "CP-009", "req": "REQ-002, REQ-011", "archivo": "EV-063_CP-009_licitacion_rechazos_api_ui.txt",
+        "titulo": "La API rechaza código repetido, presupuesto 0 y cierre pasado con el formato de error",
+        "entradas": "POST /api/tenders con (a) código lic-2026-001 (otra capitalización); (b) presupuesto \"0\"; (c) cierre anterior al reloj. Mismos datos por el formulario de la UI.",
+        "esperado": "(a) 409 duplicado; (b) 422 monto_invalido; (c) 422 cierre_no_futuro. Cuerpo exactamente {error, detalle}. La UI rechaza lo mismo y muestra el mismo detalle. (REQ-002 y REQ-011)",
+        "nodos": [
+            f"{TA}::test_codigo_duplicado_sin_distinguir_mayusculas_ni_espacios", f"{TA}::test_presupuesto_cero_negativo_o_invalido_422", f"{TA}::test_cierre_pasado_422",
+            f"{TUI}::test_crear_con_error_muestra_el_mismo_detalle_que_la_api", f"{TUI}::test_crear_rechazos_por_ui", f"{FE}::test_dominio_409_y_422",
+        ],
+        "nota": "La comparación literal del texto de error entre API y UI (test_crear_con_error_muestra_el_mismo_detalle_que_la_api) se hace con el caso (b), presupuesto 0. En los casos (a) y (c) la UI se verifica por estado HTTP y fragmento del mensaje.",
+    },
+    {
+        "run": "RUN-060", "ev": "EV-064", "cp": "CP-010", "req": "REQ-007", "archivo": "EV-064_CP-010_evaluacion_y_empate.txt",
+        "titulo": "Evaluación de L1 y desempate por orden de registro",
+        "entradas": "GET /api/tenders/{L1}/evaluation con el seed (P1 = 9 000 000,00; P2 = 9 500 000,00); escenario de empate con dos ofertas del mismo monto registradas en instantes distintos.",
+        "esperado": "Mejor oferta = P1 (9 000 000,00). En el empate gana la registrada primero. (REQ-007)",
+        "nodos": [f"{EA}::test_datos_base_l1", f"{EA}::test_empate_gana_la_registrada_primero", f"{ER}::test_empate_gana_la_registrada_primero"],
+    },
 ]
 
 
@@ -68,8 +124,11 @@ def pytest_version():
     return (p.stdout + p.stderr).strip().splitlines()[0]
 
 
+SELECCION = set(sys.argv[3:])  # opcional: ids de CP a ejecutar (por defecto, todos), p. ej.: CP-004 CP-005
 resumen = []
 for caso in CASOS:
+    if SELECCION and caso["cp"] not in SELECCION:
+        continue
     inicio = datetime.datetime.now().astimezone()
     t0 = time.perf_counter()
     cmd = [sys.executable, "-m", "pytest", "-v", "-p", "no:cacheprovider", "--no-header", "-W", "ignore", *caso["nodos"]]
