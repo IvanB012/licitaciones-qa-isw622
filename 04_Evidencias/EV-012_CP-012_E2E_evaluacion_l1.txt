@@ -1,0 +1,33 @@
+EV-012 - CP-012: E2E: L1 muestra mejor oferta, ahorro, clasificación y aprobador
+==============================================================================
+Caso de prueba  : CP-012
+Requisito       : REQ-007, REQ-008, REQ-009
+Ejecución       : RUN-012
+Fecha/hora      : 2026-11-27 13:42:45 -0600
+Commit probado  : 575deaf ((sin tag exacto))   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+HEAD (completo)  : 575deaf81bcf1aec556e04ec440279efaef91547
+qa-build-1      : e65b2d88667b998ce1b4b0ad9cebc56e1aaebc85
+Los E2E no existen en el tag qa-build-1: se ejecutan en HEAD. La app es la del tag si la salida de estos comandos está vacía:
+  git diff qa-build-1 HEAD --stat -- app seeds requirements.txt  ->  (salida vacía)
+  git diff qa-build-1 --stat -- app seeds requirements.txt (árbol de trabajo)  ->  (salida vacía)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: Navegador Chromium headless contra la app real con el seed; login como admin; detalle de LIC-2026-001 (presupuesto 10 000 000,00; ofertas P1 = 9 000 000,00 y P2 = 9 500 000,00).
+RESULTADO ESPERADO (de las reglas, no del código): Mejor oferta P1 (Tecnología Norte S.A.); ahorro 10 %; Conveniente; aprueba Gerencia. (REQ-007, REQ-008, REQ-009)
+
+Comando: python -m pytest -v -m e2e tests/e2e/test_flujos_e2e.py::test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador
+
+============================= test session starts =============================
+collecting ... collected 1 item
+tests/e2e/test_flujos_e2e.py::test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador[chromium] PASSED [100%]
+============================== 1 passed in 3.57s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador: PASSED en tests/e2e/test_flujos_e2e.py
+  OK     git diff qa-build-1 HEAD --stat -- app seeds requirements.txt: salida vacía (la app es la del tag)
+  OK     captura guardada: 04_Evidencias/e2e/EV-012_CP-012_01_detalle_l1_evaluacion.png
+  OK     resumen real de pytest: '1 passed in 3.57s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (5/5 verificaciones; 1 pruebas pasadas)

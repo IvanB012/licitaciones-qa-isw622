@@ -1,0 +1,37 @@
+EV-011 - CP-011: E2E: alta de proveedor, alta de licitación, publicar y ofertar
+==============================================================================
+Caso de prueba  : CP-011
+Requisito       : REQ-001, REQ-002, REQ-004
+Ejecución       : RUN-011
+Fecha/hora      : 2026-11-27 13:42:37 -0600
+Commit probado  : 575deaf ((sin tag exacto))   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+HEAD (completo)  : 575deaf81bcf1aec556e04ec440279efaef91547
+qa-build-1      : e65b2d88667b998ce1b4b0ad9cebc56e1aaebc85
+Los E2E no existen en el tag qa-build-1: se ejecutan en HEAD. La app es la del tag si la salida de estos comandos está vacía:
+  git diff qa-build-1 HEAD --stat -- app seeds requirements.txt  ->  (salida vacía)
+  git diff qa-build-1 --stat -- app seeds requirements.txt (árbol de trabajo)  ->  (salida vacía)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: Navegador Chromium headless contra la app real (uvicorn, BD temporal con el seed). Login como admin; proveedor "Insumos del Sur E2E"; licitación LIC-E2E-001 (presupuesto 1000000.00, cierre en 3 días); publicar; oferta de 900000.00 con ese proveedor.
+RESULTADO ESPERADO (de las reglas, no del código): El proveedor aparece en el listado; la licitación se crea en Borrador y pasa a Publicada; la oferta se registra y aparece en la tabla de ofertas (mejor oferta, ahorro 10 %). (REQ-001, REQ-002, REQ-004)
+
+Comando: python -m pytest -v -m e2e tests/e2e/test_flujos_e2e.py::test_flujo_alta_proveedor_licitacion_publicar_y_ofertar
+
+============================= test session starts =============================
+collecting ... collected 1 item
+tests/e2e/test_flujos_e2e.py::test_flujo_alta_proveedor_licitacion_publicar_y_ofertar[chromium] PASSED [100%]
+============================== 1 passed in 5.09s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_flujo_alta_proveedor_licitacion_publicar_y_ofertar: PASSED en tests/e2e/test_flujos_e2e.py
+  OK     git diff qa-build-1 HEAD --stat -- app seeds requirements.txt: salida vacía (la app es la del tag)
+  OK     captura guardada: 04_Evidencias/e2e/EV-011_CP-011_01_login_panel.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-011_CP-011_02_proveedor_creado.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-011_CP-011_03_licitacion_borrador.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-011_CP-011_04_licitacion_publicada.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-011_CP-011_05_oferta_registrada.png
+  OK     resumen real de pytest: '1 passed in 5.09s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (9/9 verificaciones; 1 pruebas pasadas)
