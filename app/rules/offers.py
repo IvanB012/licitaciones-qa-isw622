@@ -17,7 +17,7 @@ def check_tender_open(status: str, closes_at: datetime, now: datetime) -> None:
             f"La licitación está en estado {status}; solo se aceptan ofertas en licitaciones Publicadas.",
             code="licitacion_no_publicada",
         )
-    if now >= closes_at:
+    if now > closes_at:
         raise Conflict("La licitación ya cerró: venció el plazo para presentar ofertas.", code="licitacion_vencida")
 
 
