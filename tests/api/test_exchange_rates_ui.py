@@ -22,14 +22,14 @@ def _new(ui, rate="512.50", rate_date="2026-11-26", source="manual"):
     return ui.post("/exchange-rates/new", data={"rate": rate, "rate_date": rate_date, "source": source}, follow_redirects=False)
 
 
-def test_rutas_exigen_sesion(client, seeded):  # CP-### / REQ-011
+def test_rutas_exigen_sesion(client, seeded):  # REQ-011
     for path in ("/exchange-rates", "/exchange-rates/new", f"/exchange-rates/{seeded.exchange_rate_id}/edit"):
         r = client.get(path, follow_redirects=False)
         assert r.status_code == 303 and r.headers["location"] == "/login"
     assert client.post("/exchange-rates/suggest", follow_redirects=False).headers["location"] == "/login"
 
 
-def test_listado_muestra_tasa_vigente_con_fecha_y_testids(ui, seeded):  # CP-### / REQ-010
+def test_listado_muestra_tasa_vigente_con_fecha_y_testids(ui, seeded):  # REQ-010
     page = ui.get("/exchange-rates").text
     assert 'data-testid="current-rate">500.00<' in page
     assert 'data-testid="current-rate-date">26/11/2026<' in page
@@ -37,14 +37,14 @@ def test_listado_muestra_tasa_vigente_con_fecha_y_testids(ui, seeded):  # CP-###
     assert 'data-testid="exchange-rate-new"' in page
 
 
-def test_formulario_tiene_testids_y_boton_sugerir(ui):  # CP-### / REQ-013
+def test_formulario_tiene_testids_y_boton_sugerir(ui):  # REQ-013
     page = ui.get("/exchange-rates/new").text
     for testid in ("exchange-rate-rate-input", "exchange-rate-date-input", "exchange-rate-submit", "exchange-rate-suggest"):
         assert f'data-testid="{testid}"' in page
     assert 'value="2026-11-26"' in page  # fecha oficial por defecto
 
 
-def test_alta_correcta_actualiza_la_vigente(ui, db):  # CP-### / REQ-010
+def test_alta_correcta_actualiza_la_vigente(ui, db):  # REQ-010
     r = _new(ui)
     assert r.status_code == 303 and r.headers["location"] == "/exchange-rates"
     page = ui.get("/exchange-rates")
@@ -57,19 +57,19 @@ def test_alta_correcta_actualiza_la_vigente(ui, db):  # CP-### / REQ-010
     [("0", "2026-11-26", "mayor que cero"), ("-5", "2026-11-26", "inválida"), ("abc", "2026-11-26", "inválida"),
      ("500.12345", "2026-11-26", "4 decimales"), ("500", "2026-11-25", "fecha oficial")],
 )
-def test_alta_con_error_se_muestra_en_error_message(ui, rate, fecha, fragmento):  # CP-### / REQ-010
+def test_alta_con_error_se_muestra_en_error_message(ui, rate, fecha, fragmento):  # REQ-010
     r = _new(ui, rate, fecha)
     assert r.status_code == 422
     assert 'data-testid="error-message"' in r.text and fragmento in r.text
     assert f'value="{rate}"' in r.text  # conserva lo escrito
 
 
-def test_error_ui_usa_el_mismo_detalle_que_la_api(ui):  # CP-### / REQ-011
+def test_error_ui_usa_el_mismo_detalle_que_la_api(ui):  # REQ-011
     api = ui.post("/api/exchange-rates", json={"rate": "0"})
     assert api.json()["detalle"] in _new(ui, "0").text
 
 
-def test_sugerir_con_proveedor_fake_rellena_sin_guardar(ui, app, db):  # CP-### / REQ-010
+def test_sugerir_con_proveedor_fake_rellena_sin_guardar(ui, app, db):  # REQ-010
     app.state.rate_provider = FakeExchangeRateProvider("507.1234")
     antes = db.query(ExchangeRate).count()
     r = ui.post("/exchange-rates/suggest")
@@ -83,7 +83,7 @@ def test_sugerir_con_proveedor_fake_rellena_sin_guardar(ui, app, db):  # CP-### 
     assert db.query(ExchangeRate).filter_by(rate_x10000=5_071_234, source="sugerida").count() == 1
 
 
-def test_sugerir_con_servicio_caido_muestra_respaldo_y_aviso(ui, app, db):  # CP-### / REQ-010
+def test_sugerir_con_servicio_caido_muestra_respaldo_y_aviso(ui, app, db):  # REQ-010
     assert isinstance(app.state.rate_provider, FailingExchangeRateProvider)
     antes = db.query(ExchangeRate).count()
     r = ui.post("/exchange-rates/suggest")
@@ -94,7 +94,7 @@ def test_sugerir_con_servicio_caido_muestra_respaldo_y_aviso(ui, app, db):  # CP
     assert db.query(ExchangeRate).count() == antes
 
 
-def test_editar_y_borrar_por_ui(ui, seeded, db):  # CP-### / REQ-010
+def test_editar_y_borrar_por_ui(ui, seeded, db):  # REQ-010
     r = ui.post(f"/exchange-rates/{seeded.exchange_rate_id}/edit", data={"rate": "505", "rate_date": "2026-11-26"}, follow_redirects=False)
     assert r.status_code == 303
     assert 'data-testid="current-rate">505.00<' in ui.get("/exchange-rates").text
@@ -106,27 +106,27 @@ def test_editar_y_borrar_por_ui(ui, seeded, db):  # CP-### / REQ-010
     assert 'data-testid="current-rate-source">seed<' in ui.get("/exchange-rates").text
 
 
-def test_editar_inexistente_404(ui):  # CP-### / REQ-011
+def test_editar_inexistente_404(ui):  # REQ-011
     assert ui.get("/exchange-rates/99999/edit").status_code == 404
 
 
 # ---- ninguna prueba toca la red (CLAUDE.md: proveedor falso que devuelve 500) ----
-def test_la_app_de_pruebas_usa_proveedor_falso(app):  # CP-### / REQ-010
+def test_la_app_de_pruebas_usa_proveedor_falso(app):  # REQ-010
     assert isinstance(app.state.rate_provider, (FailingExchangeRateProvider, FakeExchangeRateProvider))
     assert not isinstance(app.state.rate_provider, HttpExchangeRateProvider)
 
 
-def test_create_app_con_env_test_nunca_usa_http(settings):  # CP-### / REQ-010
+def test_create_app_con_env_test_nunca_usa_http(settings):  # REQ-010
     assert isinstance(create_app(settings=settings).state.rate_provider, FailingExchangeRateProvider)
 
 
-def test_create_app_real_usa_proveedor_http_con_la_url_configurada(tmp_path):  # CP-### / REQ-010
+def test_create_app_real_usa_proveedor_http_con_la_url_configurada(tmp_path):  # REQ-010
     real = Settings(database_url=f"sqlite:///{tmp_path / 'r.db'}", env="dev", exchange_rate_url="http://ejemplo.invalido/x")
     provider = create_app(settings=real).state.rate_provider
     assert isinstance(provider, HttpExchangeRateProvider) and provider._url == "http://ejemplo.invalido/x"
 
 
-def test_la_red_esta_bloqueada_en_pruebas():  # CP-### / REQ-010
+def test_la_red_esta_bloqueada_en_pruebas():  # REQ-010
     with pytest.raises(OSError):
         socket.getaddrinfo("open.er-api.com", 443)
     with pytest.raises(httpx.HTTPError):  # httpx lo reporta como error de conexión, no llega a ningún servidor
