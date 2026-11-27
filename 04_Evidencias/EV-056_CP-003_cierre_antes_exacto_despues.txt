@@ -1,0 +1,43 @@
+EV-056 - CP-003: Ofertas antes, exactamente en y después del cierre
+==============================================================================
+Caso de prueba  : CP-003
+Requisito       : REQ-004
+Ejecución       : RUN-052
+Fecha/hora      : 2026-11-26 22:17:22 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.14.6 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: ahora = T-1 s (válida); ahora = T (rechazada); ahora = T+1 s (rechazada). Reloj controlado con FakeClock.
+RESULTADO ESPERADO (de las reglas, no del código): En T-1 s se acepta; en T y en T+1 s se rechaza (now >= cierre rechaza) con 409 licitacion_vencida y la oferta no se guarda. (REQ-004)
+NOTA: El último test no figura en la ficha del catálogo. Se agregó porque el resultado esperado exige que la oferta rechazada NO se guarde y los tests listados solo comprueban el código de error.
+
+Comando: python -m pytest -v tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta tests/unit/test_offer_rules.py::test_exactamente_en_el_cierre_se_rechaza tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza tests/api/test_offers_api.py::test_un_segundo_antes_del_cierre_se_acepta tests/api/test_offers_api.py::test_exactamente_en_el_cierre_se_rechaza tests/api/test_offers_api.py::test_un_segundo_despues_del_cierre_se_rechaza tests/api/test_offers_api.py::test_oferta_rechazada_por_plazo_no_se_guarda
+
+============================= test session starts =============================
+collecting ... collected 11 items
+tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta[delta0] PASSED [  9%]
+tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta[delta1] PASSED [ 18%]
+tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta[delta2] PASSED [ 27%]
+tests/unit/test_offer_rules.py::test_exactamente_en_el_cierre_se_rechaza PASSED [ 36%]
+tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza[delta0] PASSED [ 45%]
+tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza[delta1] PASSED [ 54%]
+tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza[delta2] PASSED [ 63%]
+tests/api/test_offers_api.py::test_un_segundo_antes_del_cierre_se_acepta PASSED [ 72%]
+tests/api/test_offers_api.py::test_exactamente_en_el_cierre_se_rechaza PASSED [ 81%]
+tests/api/test_offers_api.py::test_un_segundo_despues_del_cierre_se_rechaza PASSED [ 90%]
+tests/api/test_offers_api.py::test_oferta_rechazada_por_plazo_no_se_guarda PASSED [100%]
+============================= 11 passed in 4.18s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_antes_del_cierre_se_acepta: PASSED en tests/unit/test_offer_rules.py
+  OK     test_exactamente_en_el_cierre_se_rechaza: PASSED en tests/unit/test_offer_rules.py
+  OK     test_despues_del_cierre_se_rechaza: PASSED en tests/unit/test_offer_rules.py
+  OK     test_un_segundo_antes_del_cierre_se_acepta: PASSED en tests/api/test_offers_api.py
+  OK     test_exactamente_en_el_cierre_se_rechaza: PASSED en tests/api/test_offers_api.py
+  OK     test_un_segundo_despues_del_cierre_se_rechaza: PASSED en tests/api/test_offers_api.py
+  OK     test_oferta_rechazada_por_plazo_no_se_guarda: PASSED en tests/api/test_offers_api.py
+  OK     resumen real de pytest: '11 passed in 4.18s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (9/9 verificaciones; 11 pruebas pasadas)
