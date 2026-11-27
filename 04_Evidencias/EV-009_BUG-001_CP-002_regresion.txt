@@ -1,0 +1,41 @@
+EV-009 - CP-002: BUG-001 - CP-002 regresión sobre el commit del fix: monto igual al presupuesto y presupuesto + 0,01
+==============================================================================
+Caso de prueba  : CP-002
+Requisito       : REQ-005
+Ejecución       : RUN-009
+Fecha/hora      : 2026-11-27 12:00:18 -0600
+Commit probado  : 5fe825a (bug-001-fix)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: presupuesto CRC 1 000 000,00; oferta "1000000.00" (válida) y oferta "1000000.01" (presupuesto + 0,01).
+RESULTADO ESPERADO (de las reglas, no del código): 1000000.00 se acepta (100 000 000 céntimos); 1000000.01 se rechaza con 422 monto_excede_presupuesto. (REQ-005)
+NOTA: REGRESIÓN sobre el commit de la corrección (tag bug-001-fix): CP-002 no debe verse afectado por el arreglo del cierre.
+
+Comando: python -m pytest -v tests/unit/test_offer_rules.py::test_montos_validos tests/unit/test_offer_rules.py::test_monto_sobre_el_presupuesto_se_rechaza tests/api/test_offers_api.py::test_oferta_igual_al_presupuesto_es_valida tests/api/test_offers_api.py::test_oferta_un_centimo_sobre_el_presupuesto_422
+
+============================= test session starts =============================
+collecting ... collected 12 items
+tests/unit/test_offer_rules.py::test_montos_validos[900000.00-90000000] PASSED [  8%]
+tests/unit/test_offer_rules.py::test_montos_validos[950000.00-95000000] PASSED [ 16%]
+tests/unit/test_offer_rules.py::test_montos_validos[1000000.00-100000000] PASSED [ 25%]
+tests/unit/test_offer_rules.py::test_montos_validos[999999.99-99999999] PASSED [ 33%]
+tests/unit/test_offer_rules.py::test_montos_validos[0.01-1] PASSED       [ 41%]
+tests/unit/test_offer_rules.py::test_montos_validos[  500000  -50000000] PASSED [ 50%]
+tests/unit/test_offer_rules.py::test_monto_sobre_el_presupuesto_se_rechaza[1000000.01] PASSED [ 58%]
+tests/unit/test_offer_rules.py::test_monto_sobre_el_presupuesto_se_rechaza[1000001] PASSED [ 66%]
+tests/unit/test_offer_rules.py::test_monto_sobre_el_presupuesto_se_rechaza[5000000.00] PASSED [ 75%]
+tests/unit/test_offer_rules.py::test_monto_sobre_el_presupuesto_se_rechaza[99999999.99] PASSED [ 83%]
+tests/api/test_offers_api.py::test_oferta_igual_al_presupuesto_es_valida PASSED [ 91%]
+tests/api/test_offers_api.py::test_oferta_un_centimo_sobre_el_presupuesto_422 PASSED [100%]
+============================= 12 passed in 1.16s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_montos_validos: PASSED en tests/unit/test_offer_rules.py
+  OK     test_monto_sobre_el_presupuesto_se_rechaza: PASSED en tests/unit/test_offer_rules.py
+  OK     test_oferta_igual_al_presupuesto_es_valida: PASSED en tests/api/test_offers_api.py
+  OK     test_oferta_un_centimo_sobre_el_presupuesto_422: PASSED en tests/api/test_offers_api.py
+  OK     resumen real de pytest: '12 passed in 1.16s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (6/6 verificaciones; 12 pruebas pasadas)

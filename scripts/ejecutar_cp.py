@@ -1,8 +1,9 @@
 """Ejecuta CP automáticos con pytest sobre el commit actual y escribe la evidencia en 04_Evidencias/.
 
-Uso:  python ejecutar_cp.py <repo> <salida_json> [CP-### | SUITE ...]   (sin ids ejecuta todos; volver a ejecutar un CP sobrescribe su evidencia)
+Uso:  python ejecutar_cp.py <repo> <salida_json> [CP-### | SUITE | RUN-### ...]   (sin ids ejecuta todos; volver a ejecutar un CP sobrescribe su evidencia)
 Los veredictos salen de la salida real de pytest: código de retorno, cada test pedido en PASSED y ninguno en FAILED.
 """
+import copy
 import datetime
 import json
 import platform
@@ -185,6 +186,38 @@ CASOS = [
 ]
 
 
+# ---- BUG-001 (defecto controlado): RUN-007 a RUN-010. Se derivan de los casos de Ian SIN modificarlos y se seleccionan por id de RUN ----
+def _derivar(cp, run, ev, archivo, **cambios):
+    base = copy.deepcopy(next(c for c in CASOS if c["cp"] == cp and c["run"].startswith("RUN-05")))
+    base.update({"run": run, "ev": ev, "archivo": archivo, "sel": run}, **cambios)
+    return base
+
+
+CASOS += [
+    _derivar(
+        "CP-003", "RUN-007", "EV-007", "EV-007_BUG-001_CP-003_falla_con_defecto.txt",
+        titulo="BUG-001 - CP-003 con el defecto introducido: oferta exactamente en el cierre",
+        nota="EJECUCIÓN SOBRE EL COMMIT DEL DEFECTO (tag bug-001-defecto): en app/rules/offers.py la comparación `now >= closes_at` se cambió a `now > closes_at`. "
+        "Se espera que FALLEN los tests que prueban el instante exacto del cierre. No se corrigió nada antes de ejecutar.",
+    ),
+    _derivar(
+        "CP-003", "RUN-008", "EV-008", "EV-008_BUG-001_CP-003_retest_con_fix.txt",
+        titulo="BUG-001 - CP-003 retest sobre el commit del fix",
+        nota="RETEST sobre el commit de la corrección (tag bug-001-fix): la comparación vuelve a `now >= closes_at`. Mismos tests que RUN-007.",
+    ),
+    _derivar(
+        "CP-002", "RUN-009", "EV-009", "EV-009_BUG-001_CP-002_regresion.txt",
+        titulo="BUG-001 - CP-002 regresión sobre el commit del fix: monto igual al presupuesto y presupuesto + 0,01",
+        nota="REGRESIÓN sobre el commit de la corrección (tag bug-001-fix): CP-002 no debe verse afectado por el arreglo del cierre.",
+    ),
+    _derivar(
+        "CP-019", "RUN-010", "EV-010", "EV-010_BUG-001_CP-019_regresion.txt",
+        titulo="BUG-001 - CP-019 regresión sobre el commit del fix: oferta de 0 y de monto negativo",
+        nota="REGRESIÓN sobre el commit de la corrección (tag bug-001-fix): CP-019 no debe verse afectado por el arreglo del cierre.",
+    ),
+]
+
+
 def git(*args):
     return subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, encoding="utf-8").stdout.strip()
 
@@ -197,7 +230,7 @@ def pytest_version():
 SELECCION = set(sys.argv[3:])  # opcional: ids de CP a ejecutar (por defecto, todos), p. ej.: CP-004 CP-005
 resumen = []
 for caso in CASOS:
-    if SELECCION and caso["cp"] not in SELECCION:
+    if SELECCION and caso.get("sel", caso["cp"]) not in SELECCION:
         continue
     inicio = datetime.datetime.now().astimezone()
     t0 = time.perf_counter()
