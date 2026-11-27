@@ -98,13 +98,16 @@ Opciones, requisitos y salida: [`scripts/perf/README.md`](scripts/perf/README.md
 | `bug-001-fix` | `5fe825a` | Commit que corrige BUG-001 |
 
 ## Mapa de entregables
-| Entregable | Dónde está |
-|---|---|
-| `01_Software` | La **raíz de este repositorio**: `app/`, `seeds/`, `tests/`, `requirements.txt`, `.env.example`, `scripts/` y `postman/` |
-| `02_Plan_Informe_QA.docx` y `02_Plan_Informe_QA.pdf` | Se entregan en la **raíz del repositorio** y como **archivos anexos en el Campus Virtual UTN**, junto con el ZIP del código |
-| `03_Registro_QA.xlsx` | Se entrega en la **raíz del repositorio** y como **archivo anexo en el Campus Virtual UTN**, junto con el ZIP del código |
-| `04_Evidencias/` | Salidas reales, capturas y logs (`EV-###`); empezar por [`04_Evidencias/INDICE.md`](04_Evidencias/INDICE.md) |
-| `05_IA/` | Declaración de uso de IA (un `IA-###.md` por intervención) |
+| Componente del enunciado | En este repositorio | En el paquete de entrega (ZIP) |
+|---|---|---|
+| `01_Software/` | La raíz del repositorio: `app/`, `seeds/`, `tests/`, `scripts/`, `postman/`, `docs/`, `requirements.txt`, `.env.example` y `pytest.ini` | La carpeta `01_Software/` |
+| `README.md` | Raíz del repositorio | Raíz del ZIP |
+| `02_Plan_Informe_QA.docx` y `02_Plan_Informe_QA.pdf` | Raíz del repositorio | Raíz del ZIP |
+| `03_Registro_QA.xlsx` | Raíz del repositorio | Raíz del ZIP |
+| `04_Evidencias/` | Carpeta `04_Evidencias/`, con [`INDICE.md`](04_Evidencias/INDICE.md) | Carpeta `04_Evidencias/` |
+| `05_IA/` | Carpeta `05_IA/` (un `IA-###.md` por intervención) | Carpeta `05_IA/` |
+
+El paquete de entrega se genera con `git archive` del código más los documentos finales; no incluye `.venv`, `.env` ni bases de datos.
 
 ## Estructura de carpetas
 ```
