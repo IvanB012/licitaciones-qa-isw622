@@ -10,7 +10,7 @@ Reglas de negocio: ver `CLAUDE.md`. Contrato técnico (BD, API, UI): ver `docs/c
 ## Requisitos
 - Windows 10/11, PowerShell, Git for Windows
 - Python 3.11+
-<!-- Completar versiones probadas -->
+- Versiones probadas: Python 3.15.2 y pytest 9.2.0 (Iván); Python 3.14.6 (Ian)
 
 ## Instalación (Windows PowerShell)
 ```powershell
