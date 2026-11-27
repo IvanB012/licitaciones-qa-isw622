@@ -1,0 +1,31 @@
+EV-004 - CP-013: Alternar a USD muestra P1 = USD 18 000,00 con tasa y fecha; la BD no cambia
+==============================================================================
+Caso de prueba  : CP-013
+Requisito       : REQ-010
+Ejecución       : RUN-004
+Fecha/hora      : 2026-11-27 10:26:33 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: Detalle de LIC-2026-001 (seed: tasa CRC 500,00 por USD con fecha actual) en vista CRC y en vista USD; importes CRC de la BD antes y después.
+RESULTADO ESPERADO (de las reglas, no del código): La oferta de P1 se muestra como USD 18 000,00 con la tasa (500,00) y su fecha visibles; los importes CRC guardados quedan idénticos. (REQ-010: alternar la vista no modifica la BD)
+NOTA: Ejecuta los 3 tests de la ficha, sin añadidos. Es UI renderizada en servidor con TestClient (sin navegador); la versión E2E sigue pendiente.
+
+Comando: python -m pytest -v tests/api/test_evaluation_ui.py::test_vista_usd_muestra_monto_tasa_y_fecha tests/api/test_evaluation_ui.py::test_la_vista_de_evaluacion_no_modifica_la_bd tests/api/test_evaluation_api.py::test_alternar_moneda_no_modifica_la_bd
+
+============================= test session starts =============================
+collecting ... collected 3 items
+tests/api/test_evaluation_ui.py::test_vista_usd_muestra_monto_tasa_y_fecha PASSED [ 33%]
+tests/api/test_evaluation_ui.py::test_la_vista_de_evaluacion_no_modifica_la_bd PASSED [ 66%]
+tests/api/test_evaluation_api.py::test_alternar_moneda_no_modifica_la_bd PASSED [100%]
+============================== 3 passed in 1.46s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_vista_usd_muestra_monto_tasa_y_fecha: PASSED en tests/api/test_evaluation_ui.py
+  OK     test_la_vista_de_evaluacion_no_modifica_la_bd: PASSED en tests/api/test_evaluation_ui.py
+  OK     test_alternar_moneda_no_modifica_la_bd: PASSED en tests/api/test_evaluation_api.py
+  OK     resumen real de pytest: '3 passed in 1.46s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (5/5 verificaciones; 3 pruebas pasadas)

@@ -2,6 +2,25 @@
 
 Cada archivo `EV-###_*.txt` es la **salida literal** de una ejecución real. Todos citan el commit probado y el build de QA (`qa-build-1`). Las contraseñas, cookies y rutas locales no se reproducen.
 
+## Iván — ejecución de CP automáticos y suite completa, exactamente sobre el tag `qa-build-1` (`e65b2d8`)
+
+| EV | RUN | CP | Qué demuestra | Resultado |
+|---|---|---|---|---|
+| EV-001 | RUN-001 | Suite | Suite completa de pytest (`pytest -v` sobre `tests/`): 928 pruebas, 0 fallidas, 0 con error. | PASA (928 passed) |
+| EV-002 | RUN-002 | CP-001 | `"  tecnología   NORTE s.a. "` da la misma clave que P1; el alta se rechaza con 409 `duplicado` y la BD lo rechaza (UNIQUE). | PASA (5 pruebas) |
+| EV-003 | RUN-003 | CP-007 | 9 000 000,00 CRC / 500,00 = USD 18 000,00; las tasas 0 y negativas se rechazan con 422 `tasa_invalida`. | PASA (23 pruebas) |
+| EV-004 | RUN-004 | CP-013 | La vista USD muestra la oferta de P1 como $18 000,00 con tasa y fecha; los importes CRC de la BD no cambian al alternar (UI sin navegador). | PASA (3 pruebas) |
+| EV-005 | RUN-005 | CP-014 | Ofertas en Borrador y Cerrada rechazadas con 409 `licitacion_no_publicada`; sin ofertas se muestra "Sin ofertas válidas" (UI/API sin navegador). | PASA (4 pruebas) |
+| EV-006 | RUN-006 | CP-020 | La licitación, la oferta y la evaluación persisten al reiniciar la app. Brecha conocida: el proveedor solo se comprueba de forma indirecta. | PASA (3 pruebas) |
+
+Cada archivo guarda la salida literal de pytest, el commit, el estado del árbol (limpio) y el entorno. Se ejecutaron en un *worktree* del tag, con el script de la rama de trabajo y **solo con los ids de Iván** para no sobrescribir las evidencias de Ian:
+```powershell
+git worktree add --detach ..\_tag_qa_build_1 qa-build-1
+python scripts/ejecutar_cp.py ..\_tag_qa_build_1 resumen_ivan.json SUITE CP-001 CP-007 CP-013 CP-014 CP-020
+git worktree remove --force ..\_tag_qa_build_1
+```
+(Copiar después `EV-001` a `EV-006` de `04_Evidencias/` del worktree al repositorio de trabajo. RUN-001 tarda unos 2 min 40 s.)
+
 ## Seguridad (REQ-012) — ejecutado en la aplicación local
 
 | EV | CP | Qué demuestra | Resultado |
@@ -76,6 +95,7 @@ Resultado: **3 de 4 tareas sin ayuda** (cumple REQ-013 en el límite). Detalle y
 
 ## Registros de trabajo (para pegar en el Excel)
 
+- `registro_ivan.md`: RUN-001 a RUN-006 (suite completa, CP-001, CP-007, CP-013, CP-014 y CP-020), columnas de la hoja 06.
 - `registro_ian.md`: RUN-050 a RUN-062 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010, CP-018 y CP-017 simulada), columnas de la hoja 06.
 - `seguridad_ian.md`: SEC-001 y SEC-002, columnas de la hoja 13.
 - `rendimiento_ian.md`: PERF-001, columnas de la hoja 15.
@@ -97,4 +117,6 @@ python scripts/ejecutar_seguridad.py . http://127.0.0.1:8001
 
 Los veredictos los calcula el script a partir de las respuestas reales. Para repetir la ejecución hay que resetear la BD antes (el caso crea un proveedor y una licitación de control). EV-054 se obtiene con `git diff qa-build-1 <commit> --stat -- app seeds requirements.txt` (debe salir vacío) y EV-055 es una captura manual de la UI.
 
+> Los archivos EV-001 a EV-006, `registro_ivan.md` y la ampliación del script los generó una herramienta de IA (ver `05_IA/IA-006.md`; revisión humana pendiente).
+>
 > Los archivos EV-050 a EV-074, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`), EV-059 a EV-064 (ver `05_IA/IA-058.md`) y EV-070 a EV-074 con `usabilidad_ian.md` (ver `05_IA/IA-059.md`). La revisión humana consta en los campos de revisión de cada `IA-###` (IA-050 a IA-058); la de `IA-059` está pendiente.

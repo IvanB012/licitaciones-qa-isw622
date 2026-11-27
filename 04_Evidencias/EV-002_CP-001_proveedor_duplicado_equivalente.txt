@@ -1,0 +1,33 @@
+EV-002 - CP-001: Nombre de proveedor equivalente a P1 se rechaza como duplicado
+==============================================================================
+Caso de prueba  : CP-001
+Requisito       : REQ-001
+Ejecución       : RUN-002
+Fecha/hora      : 2026-11-27 10:26:23 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: P1 "Tecnología Norte S.A." (seed); nombre "  tecnología   NORTE s.a. " (espacios laterales, espacios internos repetidos, otras mayúsculas).
+RESULTADO ESPERADO (de las reglas, no del código): Ambos nombres producen la misma clave y el alta se rechaza como duplicado (409 duplicado); no se crea un segundo proveedor (la BD también lo impide con UNIQUE). (REQ-001)
+NOTA: Ejecuta los 3 tests de la ficha, sin añadidos. Límite: ningún test cuenta los proveedores tras el rechazo; "no se crea un segundo proveedor" se sustenta en el 409 de la API y en el rechazo UNIQUE de la BD (test_name_key_unica).
+
+Comando: python -m pytest -v tests/unit/test_provider_rules.py::test_nombres_equivalentes_tienen_la_misma_clave tests/api/test_providers_api.py::test_nombre_duplicado_equivalente_409 tests/unit/test_models.py::test_name_key_unica
+
+============================= test session starts =============================
+collecting ... collected 5 items
+tests/unit/test_provider_rules.py::test_nombres_equivalentes_tienen_la_misma_clave PASSED [ 20%]
+tests/api/test_providers_api.py::test_nombre_duplicado_equivalente_409[  tecnolog\xeda   NORTE s.a. ] PASSED [ 40%]
+tests/api/test_providers_api.py::test_nombre_duplicado_equivalente_409[TECNOLOG\xcdA NORTE S.A.] PASSED [ 60%]
+tests/api/test_providers_api.py::test_nombre_duplicado_equivalente_409[Tecnolog\xeda Norte S.A.] PASSED [ 80%]
+tests/unit/test_models.py::test_name_key_unica PASSED                    [100%]
+============================== 5 passed in 1.84s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_nombres_equivalentes_tienen_la_misma_clave: PASSED en tests/unit/test_provider_rules.py
+  OK     test_nombre_duplicado_equivalente_409: PASSED en tests/api/test_providers_api.py
+  OK     test_name_key_unica: PASSED en tests/unit/test_models.py
+  OK     resumen real de pytest: '5 passed in 1.84s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (5/5 verificaciones; 5 pruebas pasadas)
