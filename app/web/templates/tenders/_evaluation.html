@@ -1,0 +1,33 @@
+{% set klass = {'Conveniente': 'success', 'Aceptable': 'warning', 'Válida sin ahorro': 'secondary'}.get(evaluation.classification, 'light') %}
+<div class="card app-card mt-4" data-testid="evaluation-section">
+  <div class="card-header bg-white fw-semibold">Evaluación</div>
+  <div class="card-body">
+    {% if evaluation.best is none %}
+      <p class="text-muted mb-0" data-testid="evaluation-message">{{ evaluation.message }}</p>
+    {% else %}
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Mejor oferta</dt>
+        <dd class="col-sm-9" data-testid="evaluation-best-provider">{{ evaluation.best.provider.name }}</dd>
+        <dt class="col-sm-3">Monto</dt>
+        <dd class="col-sm-9" data-testid="evaluation-best-amount">{{ evaluation.best.amount_cents | format_display(currency, rate.rate) }}</dd>
+        <dt class="col-sm-3">Ahorro</dt>
+        <dd class="col-sm-9">
+          <span data-testid="evaluation-savings">{{ evaluation.savings_pct_text | replace('.', ',') }} %</span>
+          <span class="badge text-bg-{{ klass }} ms-2" data-testid="evaluation-classification">{{ evaluation.classification }}</span>
+        </dd>
+        <dt class="col-sm-3">Aprueba</dt>
+        <dd class="col-sm-9">
+          {% if evaluation.approver %}
+            <span data-testid="evaluation-approver">{{ evaluation.approver }}</span>
+          {% else %}
+            <span class="text-danger" data-testid="evaluation-approver-warning">{{ evaluation.approver_warning }}</span>
+          {% endif %}
+        </dd>
+        {% if currency == 'USD' %}
+        <dt class="col-sm-3">Tasa utilizada</dt>
+        <dd class="col-sm-9" data-testid="evaluation-rate">₡{{ rate.text }} por USD (fecha {{ rate.rate_date.strftime('%d/%m/%Y') }})</dd>
+        {% endif %}
+      </dl>
+    {% endif %}
+  </div>
+</div>
