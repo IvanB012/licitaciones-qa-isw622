@@ -124,14 +124,16 @@ Archivos de apoyo en `04_Evidencias/perf/`: `perf_20261126_224750_peticiones.csv
 
 Resultado: **3 de 4 tareas sin ayuda** (cumple REQ-013 en el límite). Detalle y propuestas de mejora en `usabilidad_ian.md`.
 
+Las capturas EV-070 a EV-074 son de la **sesión real** (prueba manual del 2026-11-27 con dos personas ajenas al equipo, P. y F., solo iniciales). **No se cronometraron** las tareas: no hay tiempos. No se registraron nombres completos, hora ni navegador.
+
 ## Registros de trabajo (para pegar en el Excel)
 
 - `registro_ivan.md`: RUN-001 a RUN-014 (suite completa, CP-001, CP-007, CP-013, CP-014 y CP-020; BUG-001: CP-003, CP-003, CP-002, CP-019; y E2E: CP-011, CP-012, CP-013 y CP-020), columnas de la hoja 06.
 - `bug-001.md`: ficha del defecto controlado BUG-001.
-- `registro_ian.md`: RUN-050 a RUN-062 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010, CP-018 y CP-017 simulada), columnas de la hoja 06.
+- `registro_ian.md`: RUN-050 a RUN-062 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010, CP-018 y CP-017 prueba manual con 2 personas), columnas de la hoja 06.
 - `seguridad_ian.md`: SEC-001 y SEC-002, columnas de la hoja 13.
 - `rendimiento_ian.md`: PERF-001, columnas de la hoja 15.
-- `usabilidad_ian.md`: UX-001 a UX-004 (**simulada**), columnas de la hoja 14.
+- `usabilidad_ian.md`: UX-001 a UX-004 (prueba manual real), columnas de la hoja 14.
 
 > **Renumeración:** estas evidencias se crearon como EV-101 a EV-104 y el registro de IA como IA-054. Se renombraron a EV-050 a EV-053 e IA-056 para respetar los rangos de IDs de Ian. Solo cambia el identificador: el contenido es el de la ejecución del 26-nov-2026 a las 21:50.
 
@@ -151,4 +153,4 @@ Los veredictos los calcula el script a partir de las respuestas reales. Para rep
 
 > Los archivos EV-001 a EV-006, `registro_ivan.md` y la ampliación del script los generó una herramienta de IA (ver `05_IA/IA-006.md`; revisado por un humano: ver los campos de revisión). Lo mismo EV-007 a EV-010, EV-015, `bug-001.md` y el soporte de RUN-007 a RUN-010 en el script (ver `05_IA/IA-007.md`; revisado por un humano: ver los campos de revisión). Lo mismo EV-011 a EV-014, las 11 capturas de `04_Evidencias/e2e/`, las pruebas E2E y el soporte de RUN-011 a RUN-014 en el script (ver `05_IA/IA-008.md`; revisado por un humano: ver los campos de revisión).
 >
-> Los archivos EV-050 a EV-074, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`), EV-059 a EV-064 (ver `05_IA/IA-058.md`) y EV-070 a EV-074 con `usabilidad_ian.md` (ver `05_IA/IA-059.md`). La revisión humana consta en los campos de revisión de cada `IA-###` (IA-050 a IA-058); la de `IA-059` está pendiente.
+> Los archivos EV-050 a EV-069, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`), EV-059 a EV-064 (ver `05_IA/IA-058.md`) y la documentación de la prueba de usabilidad `usabilidad_ian.md` (ver `05_IA/IA-059.md`; las capturas EV-070 a EV-074 son de la sesión real, no las generó la IA). La revisión humana consta en los campos de revisión de cada `IA-###` (IA-050 a IA-059).
