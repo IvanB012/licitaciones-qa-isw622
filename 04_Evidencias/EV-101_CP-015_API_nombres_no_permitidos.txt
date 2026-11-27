@@ -1,0 +1,55 @@
+EV-101 - Seguridad: nombres de proveedor no permitidos por la API
+==============================================================================
+Casos de prueba : CP-015
+Requisitos      : REQ-012
+Fecha/hora      : 2026-11-26 21:50:30 -0600
+Commit probado  : cf4a817 (Merge pull request #10 from IvanB012/docs/casos-prueba)
+Build de QA     : qa-build-1 -> e65b2d8  (los commits posteriores solo tocan docs/tests)
+Entorno         : Python 3.14.6 / Windows 11
+Aplicación      : http://127.0.0.1:8001 (BD temporal con el seed de referencia, datos sintéticos)
+Usuario         : operador (credenciales de prueba del README; no se reproducen aquí)
+
+OBJETIVO: Intentar crear proveedores con <script>, & , ; y emoji directamente contra POST /api/providers.
+RESULTADO ESPERADO (de las reglas, no del código): 422 validacion_nombre para cada nombre y no se guarda nada; un nombre válido de control sí se acepta.
+
+Proveedores antes de la prueba: 2
+
+> POST /api/providers  name='<script>alert(1)</script>'
+< HTTP 422   content-type: application/json
+< cuerpo: {"error":"validacion_nombre","detalle":"El nombre solo admite letras (con tildes y ñ), números, espacios, punto, coma y paréntesis."}
+   [OK ] '<script>alert(1)</script>' -> 422 validacion_nombre
+
+> POST /api/providers  name='Acme & Co'
+< HTTP 422   content-type: application/json
+< cuerpo: {"error":"validacion_nombre","detalle":"El nombre solo admite letras (con tildes y ñ), números, espacios, punto, coma y paréntesis."}
+   [OK ] 'Acme & Co' -> 422 validacion_nombre
+
+> POST /api/providers  name='Nombre; DROP TABLE'
+< HTTP 422   content-type: application/json
+< cuerpo: {"error":"validacion_nombre","detalle":"El nombre solo admite letras (con tildes y ñ), números, espacios, punto, coma y paréntesis."}
+   [OK ] 'Nombre; DROP TABLE' -> 422 validacion_nombre
+
+> POST /api/providers  name='Acme 😀'
+< HTTP 422   content-type: application/json
+< cuerpo: {"error":"validacion_nombre","detalle":"El nombre solo admite letras (con tildes y ñ), números, espacios, punto, coma y paréntesis."}
+   [OK ] 'Acme 😀' -> 422 validacion_nombre
+
+Proveedores después de los 4 intentos: 2
+   [OK ] no se guardó ningún proveedor (misma cantidad antes y después)
+   [OK ] ningún nombre enviado aparece en el listado
+
+> POST /api/providers  name='Servicios del Pacífico (Prueba), S.A.'   (control positivo)
+< HTTP 201   content-type: application/json
+< cuerpo: {"id":3,"name":"Servicios del Pacífico (Prueba), S.A.","contact_email":null}
+   [OK ] el nombre válido de control se acepta con 201 (el validador no rechaza todo)
+
+VERIFICACIONES
+  OK     '<script>alert(1)</script>' -> 422 validacion_nombre
+  OK     'Acme & Co' -> 422 validacion_nombre
+  OK     'Nombre; DROP TABLE' -> 422 validacion_nombre
+  OK     'Acme 😀' -> 422 validacion_nombre
+  OK     no se guardó ningún proveedor (misma cantidad antes y después)
+  OK     ningún nombre enviado aparece en el listado
+  OK     el nombre válido de control se acepta con 201 (el validador no rechaza todo)
+
+RESULTADO OBTENIDO: PASA  (7/7 verificaciones)

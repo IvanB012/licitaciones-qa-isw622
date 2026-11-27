@@ -1,0 +1,124 @@
+EV-103 - Seguridad: errores controlados sin trazas, rutas ni credenciales
+==============================================================================
+Casos de prueba : CP-016
+Requisitos      : REQ-012
+Fecha/hora      : 2026-11-26 21:50:32 -0600
+Commit probado  : cf4a817 (Merge pull request #10 from IvanB012/docs/casos-prueba)
+Build de QA     : qa-build-1 -> e65b2d8  (los commits posteriores solo tocan docs/tests)
+Entorno         : Python 3.14.6 / Windows 11
+Aplicación      : http://127.0.0.1:8001 (BD temporal con el seed de referencia, datos sintéticos)
+Usuario         : operador (credenciales de prueba del README; no se reproducen aquí)
+
+OBJETIVO: Provocar errores reales (404, 401, 400, 405, 422) y leer el cuerpo completo de cada respuesta.
+RESULTADO ESPERADO (de las reglas, no del código): Formato {"error","detalle"} con el HTTP correcto y ninguna respuesta contiene trazas, nombres .py, rutas ni credenciales.
+
+Textos buscados en cada respuesta (trazas y rutas): 'Traceback', '.py', 'File "', 'sqlalchemy', 'sqlite', 'C:\\', '/Users/', 'site-packages'
+Además se busca: las contraseñas de los usuarios de prueba, SECRET_KEY, su valor de ejemplo y los hashes argon2 (valores no reproducidos aquí).
+
+> GET /api/no-existe
+< HTTP 404   content-type: application/json
+< cuerpo: {"error":"no_encontrado","detalle":"El recurso solicitado no existe."}
+   [OK ] GET /api/no-existe -> 404 no_encontrado
+   [OK ] GET /api/no-existe -> formato {error, detalle} únicamente
+   [OK ] GET /api/no-existe -> sin trazas ni credenciales
+
+> GET /api/providers/99999
+< HTTP 404   content-type: application/json
+< cuerpo: {"error":"no_encontrado","detalle":"El proveedor no existe."}
+   [OK ] GET /api/providers/99999 -> 404 no_encontrado
+   [OK ] GET /api/providers/99999 -> formato {error, detalle} únicamente
+   [OK ] GET /api/providers/99999 -> sin trazas ni credenciales
+
+> GET /api/tenders/99999
+< HTTP 404   content-type: application/json
+< cuerpo: {"error":"no_encontrado","detalle":"La licitación no existe."}
+   [OK ] GET /api/tenders/99999 -> 404 no_encontrado
+   [OK ] GET /api/tenders/99999 -> formato {error, detalle} únicamente
+   [OK ] GET /api/tenders/99999 -> sin trazas ni credenciales
+
+> GET /api/providers  (sin sesión)
+< HTTP 401   content-type: application/json
+< cuerpo: {"error":"no_autenticado","detalle":"Debe iniciar sesión."}
+   [OK ] GET /api/providers  (sin sesión) -> 401 no_autenticado
+   [OK ] GET /api/providers  (sin sesión) -> formato {error, detalle} únicamente
+   [OK ] GET /api/providers  (sin sesión) -> sin trazas ni credenciales
+
+> GET /api/auth/login  (método no permitido)
+< HTTP 405   content-type: application/json
+< cuerpo: {"error":"metodo_no_permitido","detalle":"Método no permitido para este recurso."}
+   [OK ] GET /api/auth/login  (método no permitido) -> 405 metodo_no_permitido
+   [OK ] GET /api/auth/login  (método no permitido) -> formato {error, detalle} únicamente
+   [OK ] GET /api/auth/login  (método no permitido) -> sin trazas ni credenciales
+
+> POST /api/providers  (JSON malformado)
+< HTTP 400   content-type: application/json
+< cuerpo: {"error":"solicitud_invalida","detalle":"El cuerpo de la solicitud no es un JSON válido."}
+   [OK ] POST /api/providers  (JSON malformado) -> 400 solicitud_invalida
+   [OK ] POST /api/providers  (JSON malformado) -> formato {error, detalle} únicamente
+   [OK ] POST /api/providers  (JSON malformado) -> sin trazas ni credenciales
+
+> POST /api/providers  (cuerpo sin 'name')
+< HTTP 422   content-type: application/json
+< cuerpo: {"error":"validacion","detalle":"name: es obligatorio"}
+   [OK ] POST /api/providers  (cuerpo sin 'name') -> 422 validacion
+   [OK ] POST /api/providers  (cuerpo sin 'name') -> formato {error, detalle} únicamente
+   [OK ] POST /api/providers  (cuerpo sin 'name') -> sin trazas ni credenciales
+
+> POST /api/auth/login  (credenciales falsas)
+< HTTP 401   content-type: application/json
+< cuerpo: {"error":"credenciales_invalidas","detalle":"Usuario o contraseña incorrectos."}
+   [OK ] POST /api/auth/login  (credenciales falsas) -> 401 credenciales_invalidas
+   [OK ] POST /api/auth/login  (credenciales falsas) -> formato {error, detalle} únicamente
+   [OK ] POST /api/auth/login  (credenciales falsas) -> sin trazas ni credenciales
+
+> GET /tenders/99999   (UI)
+< HTTP 404
+   [OK ] UI /tenders/99999 -> página de error controlada (404 o 403), no un 500
+   [OK ] UI /tenders/99999 -> sin trazas ni credenciales
+
+> GET /offers/99999/edit   (UI)
+< HTTP 404
+   [OK ] UI /offers/99999/edit -> página de error controlada (404 o 403), no un 500
+   [OK ] UI /offers/99999/edit -> sin trazas ni credenciales
+
+> GET /users/99999/edit   (UI)
+< HTTP 403
+   [OK ] UI /users/99999/edit -> página de error controlada (404 o 403), no un 500
+   [OK ] UI /users/99999/edit -> sin trazas ni credenciales
+
+NOTA: provocar un error 500 real exige alterar el código de la aplicación. Ese caso (ruta de prueba que lanza una excepción con un texto
+'secreto') se ejecuta en EV-104 con pytest, que es la forma prevista en el diseño del caso CP-016.
+
+VERIFICACIONES
+  OK     GET /api/no-existe -> 404 no_encontrado
+  OK     GET /api/no-existe -> formato {error, detalle} únicamente
+  OK     GET /api/no-existe -> sin trazas ni credenciales
+  OK     GET /api/providers/99999 -> 404 no_encontrado
+  OK     GET /api/providers/99999 -> formato {error, detalle} únicamente
+  OK     GET /api/providers/99999 -> sin trazas ni credenciales
+  OK     GET /api/tenders/99999 -> 404 no_encontrado
+  OK     GET /api/tenders/99999 -> formato {error, detalle} únicamente
+  OK     GET /api/tenders/99999 -> sin trazas ni credenciales
+  OK     GET /api/providers  (sin sesión) -> 401 no_autenticado
+  OK     GET /api/providers  (sin sesión) -> formato {error, detalle} únicamente
+  OK     GET /api/providers  (sin sesión) -> sin trazas ni credenciales
+  OK     GET /api/auth/login  (método no permitido) -> 405 metodo_no_permitido
+  OK     GET /api/auth/login  (método no permitido) -> formato {error, detalle} únicamente
+  OK     GET /api/auth/login  (método no permitido) -> sin trazas ni credenciales
+  OK     POST /api/providers  (JSON malformado) -> 400 solicitud_invalida
+  OK     POST /api/providers  (JSON malformado) -> formato {error, detalle} únicamente
+  OK     POST /api/providers  (JSON malformado) -> sin trazas ni credenciales
+  OK     POST /api/providers  (cuerpo sin 'name') -> 422 validacion
+  OK     POST /api/providers  (cuerpo sin 'name') -> formato {error, detalle} únicamente
+  OK     POST /api/providers  (cuerpo sin 'name') -> sin trazas ni credenciales
+  OK     POST /api/auth/login  (credenciales falsas) -> 401 credenciales_invalidas
+  OK     POST /api/auth/login  (credenciales falsas) -> formato {error, detalle} únicamente
+  OK     POST /api/auth/login  (credenciales falsas) -> sin trazas ni credenciales
+  OK     UI /tenders/99999 -> página de error controlada (404 o 403), no un 500
+  OK     UI /tenders/99999 -> sin trazas ni credenciales
+  OK     UI /offers/99999/edit -> página de error controlada (404 o 403), no un 500
+  OK     UI /offers/99999/edit -> sin trazas ni credenciales
+  OK     UI /users/99999/edit -> página de error controlada (404 o 403), no un 500
+  OK     UI /users/99999/edit -> sin trazas ni credenciales
+
+RESULTADO OBTENIDO: PASA  (30/30 verificaciones)
