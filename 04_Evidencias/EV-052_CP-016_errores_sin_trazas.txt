@@ -1,4 +1,4 @@
-EV-103 - Seguridad: errores controlados sin trazas, rutas ni credenciales
+EV-052 - Seguridad: errores controlados sin trazas, rutas ni credenciales
 ==============================================================================
 Casos de prueba : CP-016
 Requisitos      : REQ-012
@@ -87,7 +87,7 @@ Además se busca: las contraseñas de los usuarios de prueba, SECRET_KEY, su val
    [OK ] UI /users/99999/edit -> sin trazas ni credenciales
 
 NOTA: provocar un error 500 real exige alterar el código de la aplicación. Ese caso (ruta de prueba que lanza una excepción con un texto
-'secreto') se ejecuta en EV-104 con pytest, que es la forma prevista en el diseño del caso CP-016.
+'secreto') se ejecuta en EV-053 con pytest, que es la forma prevista en el diseño del caso CP-016.
 
 VERIFICACIONES
   OK     GET /api/no-existe -> 404 no_encontrado

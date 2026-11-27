@@ -1,0 +1,54 @@
+EV-054 - El código de la aplicación es idéntico al del build qa-build-1
+==============================================================================
+Casos de prueba : CP-015, CP-016 (respaldo de EV-050 a EV-053)
+Requisitos      : REQ-012
+Fecha/hora      : 2026-11-26 22:05:55 -0600
+Entorno         : git 2.54.0.windows.1
+
+OBJETIVO: Las ejecuciones de seguridad EV-050 a EV-053 se hicieron sobre el commit cf4a817 (main), no sobre el tag
+qa-build-1. Esta evidencia demuestra que el código de la aplicación, el seed y las dependencias NO cambiaron entre el
+tag y esos commits (regla 4 de la guía de ejecución de QA).
+RESULTADO ESPERADO: la comparación de app/, seeds/ y requirements.txt entre el tag y cada commit sale VACÍA.
+
+HASHES
+  tag qa-build-1                         -> e65b2d8  (Merge pull request #9 from IvanB012/feat/usuarios)
+  commit donde se ejecutó la seguridad   -> cf4a817  (Merge pull request #10 from IvanB012/docs/casos-prueba)
+  origin/main al generar esta evidencia  -> d2b624a  (Merge pull request #11 from IvanB012/test/seguridad)
+
+$ git diff qa-build-1 cf4a817 --stat -- app seeds requirements.txt
+(salida vacía)
+
+$ git diff qa-build-1 origin/main --stat -- app seeds requirements.txt
+(salida vacía)
+
+$ git diff qa-build-1 origin/main --name-only     (qué SÍ cambió desde el tag, solo para contexto)
+04_Evidencias/EV-101_CP-015_API_nombres_no_permitidos.txt
+04_Evidencias/EV-102_CP-015_UI_escape_y_rechazo.txt
+04_Evidencias/EV-103_CP-016_errores_sin_trazas.txt
+04_Evidencias/EV-104_CP-015_CP-016_pytest.txt
+04_Evidencias/INDICE.md
+05_IA/IA-005.md
+05_IA/IA-054.md
+docs/automatizacion.md
+docs/casos_prueba.md
+docs/trazabilidad.md
+scripts/ejecutar_seguridad.py
+tests/api/test_approval_ranges_api.py
+tests/api/test_approval_ranges_ui.py
+tests/api/test_exchange_rates_api.py
+tests/api/test_exchange_rates_ui.py
+tests/api/test_providers_api.py
+tests/api/test_providers_ui.py
+tests/unit/test_approval_range_rules.py
+tests/unit/test_exchange_rate_rules.py
+tests/unit/test_provider_rules.py
+
+NOTA: la lista corresponde al estado de origin/main, donde las evidencias de seguridad y IA-054 aún figuran con su nombre
+anterior (EV-101 a EV-104). Esta corrección los renombra a EV-050 a EV-053 e IA-056. Ningún archivo de app/, seeds/ ni
+requirements.txt aparece en la lista: solo cambiaron documentación, pruebas (comentarios) y archivos de evidencia.
+
+VERIFICACIONES
+  OK     app/seeds/requirements.txt idénticos entre qa-build-1 y cf4a817
+  OK     app/seeds/requirements.txt idénticos entre qa-build-1 y origin/main (d2b624a)
+
+RESULTADO OBTENIDO: PASA (2/2 verificaciones)
