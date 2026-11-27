@@ -46,12 +46,20 @@ Borra todas las tablas y deja la BD en el estado de referencia (2 usuarios, 3 ra
 
 ## Cómo correr los tests
 ```powershell
-pytest                    # unit + api (e2e cuando existan)
+pytest                    # unit + api (los e2e NO corren por defecto: pytest.ini usa -m "not e2e")
 pytest tests/unit tests/api
-pytest tests/e2e          # requiere chromium (playwright install chromium)
 pytest --cov=app
 ```
 Cada prueba usa una BD SQLite temporal limpia, `FakeClock` y un proveedor de tipo de cambio que falla (nunca hay red).
+
+### Pruebas E2E (Playwright)
+Las pruebas de extremo a extremo (`tests/e2e/`, marca `e2e`) abren Chromium headless contra la app **real**: la fixture levanta `uvicorn` en un puerto libre con una BD SQLite temporal sembrada con el seed (credenciales `admin` de la tabla de arriba) y `ENV=test`, que usa un proveedor de tipo de cambio falso (sin red). No tocan `licitaciones.db`.
+```powershell
+python -m playwright install chromium     # una sola vez
+pytest tests/e2e -m e2e                   # todas las E2E (CP-011, CP-012, CP-013 y CP-020)
+pytest tests/e2e -m e2e -k reiniciar       # una sola, por nombre (aquí: CP-020)
+```
+Dejan capturas en `04_Evidencias/e2e/` (se sobrescriben en cada corrida). Cada E2E arranca su propio servidor y su BD, así que no dependen unas de otras; la de CP-020 detiene y vuelve a levantar uvicorn con la misma BD.
 
 ## Estructura de carpetas
 ```

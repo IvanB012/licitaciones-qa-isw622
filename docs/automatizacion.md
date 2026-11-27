@@ -30,6 +30,19 @@
 
 Total: 12 pruebas automatizadas representativas (7 unitarias y 5 de API; mínimos de la práctica: ≥ 6 unitarias, ≥ 3 de API, ≥ 8 en total).
 
+## E2E con Playwright (4)
+
+Navegador Chromium headless contra la app real (uvicorn, puerto libre, BD temporal con el seed, `ENV=test`: tipo de cambio sin red). Marca `e2e`: `pytest` por defecto **no** las corre.
+
+| # | CP | REQ | Ruta y node id | Comando |
+|---|---|---|---|---|
+| 13 | CP-011 | REQ-001, REQ-002, REQ-004 | `tests/e2e/test_flujos_e2e.py::test_flujo_alta_proveedor_licitacion_publicar_y_ofertar` | `.venv/Scripts/python -m pytest tests/e2e/test_flujos_e2e.py::test_flujo_alta_proveedor_licitacion_publicar_y_ofertar -m e2e -v` |
+| 14 | CP-012 | REQ-007, REQ-008, REQ-009 | `tests/e2e/test_flujos_e2e.py::test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador` | `.venv/Scripts/python -m pytest tests/e2e/test_flujos_e2e.py::test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador -m e2e -v` |
+| 15 | CP-013 | REQ-010 | `tests/e2e/test_flujos_e2e.py::test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes` | `.venv/Scripts/python -m pytest tests/e2e/test_flujos_e2e.py::test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes -m e2e -v` |
+| 16 | CP-020 | REQ-011 | `tests/e2e/test_flujos_e2e.py::test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor` | `.venv/Scripts/python -m pytest tests/e2e/test_flujos_e2e.py::test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor -m e2e -v` |
+
+Todas juntas: `.venv/Scripts/python -m pytest tests/e2e -m e2e -v`. Requieren Chromium (`python -m playwright install chromium`). Dejan capturas en `04_Evidencias/e2e/`.
+
 ## Ejecutar todas las listadas
 
 ```
@@ -52,5 +65,5 @@ Total: 12 pruebas automatizadas representativas (7 unitarias y 5 de API; mínimo
 
 ## Notas
 
-- Las pruebas E2E con Playwright (`tests/e2e/`) todavía no existen; CP-011 y CP-012 quedan como "pendiente (E2E)".
+- Las pruebas E2E con Playwright están en `tests/e2e/` y se describen en la sección siguiente; CP-014 sigue sin versión E2E.
 - Este documento describe las pruebas; las ejecuciones (RUN) y su evidencia (`04_Evidencias/EV-###`) se registran aparte.

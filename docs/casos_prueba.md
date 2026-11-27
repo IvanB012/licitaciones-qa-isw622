@@ -5,7 +5,7 @@ Sistema de Gestión de Licitaciones — ISW-622. Los resultados esperados salen 
 - **Origen** de todos los casos: IA-asistida / mixta (diseño propuesto con IA y pendiente de revisión humana). Ficha generada en **IA-005**.
 - **Revisor**: A COMPLETAR POR EL HUMANO en cada ficha. No se ha registrado ninguna ejecución (RUN) en este documento.
 - **Test existente**: ruta y node id de pytest (`ruta::nombre`). Si el nodo está parametrizado, el node id sin corchetes ejecuta todas sus variantes. Comando general: `.venv/Scripts/python -m pytest <node id> -v`.
-- Los tests de "API" y de "UI" usan `TestClient` (sin navegador); los E2E con Playwright (`tests/e2e/`) aún no existen y se marcan "pendiente (E2E)".
+- Los tests de "API" y de "UI" usan `TestClient` (sin navegador); los E2E con Playwright están en `tests/e2e/` (marca `e2e`; `pytest` por defecto no los corre): `pytest tests/e2e -m e2e`. Abren un navegador real contra la app real (uvicorn, BD temporal con el seed, tipo de cambio sin red) y guardan capturas en `04_Evidencias/e2e/`.
 
 ## Resumen
 
@@ -21,16 +21,16 @@ Sistema de Gestión de Licitaciones — ISW-622. Los resultados esperados salen 
 | CP-008 | Integración/API | REQ-006 | Alta | Automático | Sí |
 | CP-009 | Integración/API | REQ-002, REQ-011 | Alta | Automático | Sí |
 | CP-010 | Integración/API | REQ-007 | Alta | Automático | Sí |
-| CP-011 | Funcional | REQ-001, REQ-002, REQ-004 | Alta | Manual | Parcial; E2E pendiente |
-| CP-012 | Funcional | REQ-007, REQ-008, REQ-009 | Alta | Manual | Parcial; E2E pendiente |
-| CP-013 | Funcional | REQ-010 | Media | Automático (UI sin navegador) | Sí |
+| CP-011 | Funcional | REQ-001, REQ-002, REQ-004 | Alta | Automático (E2E) | Sí (E2E) |
+| CP-012 | Funcional | REQ-007, REQ-008, REQ-009 | Alta | Automático (E2E) | Sí (E2E) |
+| CP-013 | Funcional | REQ-010 | Media | Automático (E2E y UI sin navegador) | Sí (E2E) |
 | CP-014 | Funcional | REQ-003, REQ-004, REQ-007 | Media | Automático (UI sin navegador) | Sí |
 | CP-015 | Seguridad | REQ-012 | Alta | Automático | Sí |
 | CP-016 | Seguridad | REQ-012 | Alta | Automático | Sí |
 | CP-017 | Usabilidad | REQ-013 | Media | Manual | Manual |
 | CP-018 | Rendimiento | REQ-014 | Media | Manual con herramienta de carga | Manual |
 | CP-019 | Borde/negativo | REQ-005 | Alta | Automático | Sí |
-| CP-020 | Borde/negativo | REQ-011 | Alta | Automático | Sí |
+| CP-020 | Borde/negativo | REQ-011 | Alta | Automático (API y E2E) | Sí (E2E) |
 
 Cobertura por tipo (mínimos de la práctica): 7 unitarias (≥7), 3 integración/API (≥3), 4 funcionales (≥4), 2 seguridad (≥2), 1 usabilidad (≥1), 1 rendimiento (≥1), 2 de borde/negativo.
 
@@ -257,14 +257,16 @@ Cobertura por tipo (mínimos de la práctica): 7 unitarias (≥7), 3 integració
   3. Publicar la licitación.
   4. En el detalle, registrar la oferta del proveedor nuevo.
 - **Resultado esperado:** El proveedor aparece en el listado; la licitación se crea en Borrador y pasa a Publicada; la oferta se registra y aparece en la tabla de ofertas. (REQ-001, REQ-002, REQ-004.)
-- **Modo:** Manual (E2E Playwright pendiente)
-- **Test existente:** Pendiente (E2E). Cobertura parcial por pasos, en UI sin navegador:
+- **Modo:** Automático (E2E con Playwright)
+- **Test existente:**
+  - `tests/e2e/test_flujos_e2e.py::test_flujo_alta_proveedor_licitacion_publicar_y_ofertar` (E2E: login, proveedor, licitación, publicar y ofertar; capturas en `04_Evidencias/e2e/EV-011_*`)
+  - Cobertura complementaria por pasos, en UI sin navegador:
   - `tests/api/test_providers_ui.py::test_alta_correcta_redirige_al_listado_con_mensaje`
   - `tests/api/test_tenders_ui.py::test_crear_por_ui_redirige_al_detalle_en_borrador`
   - `tests/api/test_tenders_ui.py::test_publicar_cerrar_y_no_reabrir_por_ui`
   - `tests/api/test_offers_ui.py::test_registrar_oferta_por_ui`
 - **Origen:** IA-asistida / mixta
-- **IA ID:** IA-005 (ficha)
+- **IA ID:** IA-008 (E2E), IA-005 (ficha)
 - **Revisor:** A COMPLETAR POR EL HUMANO
 
 ## CP-012
@@ -277,12 +279,14 @@ Cobertura por tipo (mínimos de la práctica): 7 unitarias (≥7), 3 integració
 - **Entradas exactas:** abrir el detalle de LIC-2026-001.
 - **Pasos:** Iniciar sesión, abrir Licitaciones y entrar al detalle de LIC-2026-001.
 - **Resultado esperado:** Mejor oferta P1; ahorro 10 %; "Conveniente"; aprobador Gerencia. (REQ-007, REQ-008 y REQ-009: presupuesto 10 000 000,00 y mejor oferta 9 000 000,00.)
-- **Modo:** Manual (E2E Playwright pendiente)
-- **Test existente:** Pendiente (E2E). Cobertura parcial sin navegador:
+- **Modo:** Automático (E2E con Playwright)
+- **Test existente:**
+  - `tests/e2e/test_flujos_e2e.py::test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador` (E2E; captura en `04_Evidencias/e2e/EV-012_*`)
+  - Cobertura complementaria sin navegador:
   - `tests/api/test_evaluation_ui.py::test_detalle_muestra_la_evaluacion_de_los_datos_base`
   - `tests/api/test_evaluation_api.py::test_datos_base_l1`
 - **Origen:** IA-asistida / mixta
-- **IA ID:** IA-005 (ficha)
+- **IA ID:** IA-008 (E2E), IA-005 (ficha)
 - **Revisor:** A COMPLETAR POR EL HUMANO
 
 ## CP-013
@@ -298,13 +302,14 @@ Cobertura por tipo (mínimos de la práctica): 7 unitarias (≥7), 3 integració
   2. Alternar a USD.
   3. Comparar los importes guardados en la BD antes y después.
 - **Resultado esperado:** Oferta de P1 = USD 18 000,00 con la tasa (500,00) y su fecha visibles; los importes CRC en la BD quedan idénticos. (REQ-010: alternar la vista no modifica la BD.)
-- **Modo:** Automático (UI sin navegador); versión E2E pendiente
+- **Modo:** Automático (E2E con Playwright y UI sin navegador)
 - **Test existente:**
+  - `tests/e2e/test_flujos_e2e.py::test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes` (E2E; capturas en `04_Evidencias/e2e/EV-013_*`)
   - `tests/api/test_evaluation_ui.py::test_vista_usd_muestra_monto_tasa_y_fecha`
   - `tests/api/test_evaluation_ui.py::test_la_vista_de_evaluacion_no_modifica_la_bd`
   - `tests/api/test_evaluation_api.py::test_alternar_moneda_no_modifica_la_bd`
 - **Origen:** IA-asistida / mixta
-- **IA ID:** IA-052 (tests), IA-005 (ficha)
+- **IA ID:** IA-052 (tests), IA-008 (E2E), IA-005 (ficha)
 - **Revisor:** A COMPLETAR POR EL HUMANO
 
 ## CP-014
@@ -439,11 +444,12 @@ Cobertura por tipo (mínimos de la práctica): 7 unitarias (≥7), 3 integració
   3. Consultar los tres registros.
 - **Resultado esperado:** El proveedor, la licitación y la oferta siguen presentes con los mismos datos. (REQ-011: los datos persisten al reiniciar.)
 - **Modo:** Automático
-- **Brecha conocida:** los tests automáticos verifican la licitación (publicada, presupuesto) y la oferta (más el conteo de ofertas de L1) tras reiniciar; no hay un test que cree un proveedor nuevo y lo relea tras reiniciar (el proveedor solo se comprueba de forma indirecta como parte de la oferta). Cubrirlo queda pendiente o se verifica manualmente en la ejecución (RUN).
+- **Cobertura:** los tests de API verifican la licitación (publicada, presupuesto) y la oferta tras reiniciar; el proveedor nuevo, que antes solo se comprobaba de forma indirecta, queda cubierto por el E2E: crea un proveedor, reinicia el servidor uvicorn con la misma BD y verifica que sigue en el listado. Con eso se cierra la brecha anterior.
 - **Test existente:**
+  - `tests/e2e/test_flujos_e2e.py::test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor` (E2E: proveedor y reinicio real del servidor; capturas en `04_Evidencias/e2e/EV-014_*`)
   - `tests/api/test_tenders_api.py::test_los_datos_persisten_al_reiniciar_la_app`
   - `tests/api/test_offers_api.py::test_las_ofertas_persisten_al_reiniciar_la_app`
   - `tests/api/test_evaluation_api.py::test_la_evaluacion_persiste_al_reiniciar_la_app`
 - **Origen:** IA-asistida / mixta
-- **IA ID:** IA-050 / IA-051 / IA-052 (tests), IA-005 (ficha)
+- **IA ID:** IA-050 / IA-051 / IA-052 (tests), IA-008 (E2E), IA-005 (ficha)
 - **Revisor:** A COMPLETAR POR EL HUMANO
