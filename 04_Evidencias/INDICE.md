@@ -39,6 +39,21 @@ git worktree remove --force ..\_tag_qa_build_1
 ```
 (El script escribe la evidencia en `04_Evidencias/` del repo que se le indica; hay que copiarla después al repositorio de trabajo.)
 
+## Postman — pruebas de la API (REQ-001, 002, 003, 005, 006, 007, 008, 009, 011 y 012)
+
+| EV | Qué demuestra | Resultado |
+|---|---|---|
+| EV-067 | Colección completa (17 peticiones: éxitos y escenarios negativos) ejecutada con newman sobre un seed limpio, con la app del tag `qa-build-1` (`e65b2d8`). | PASA (17 requests, 53 aserciones, 0 fallidas) |
+| EV-068 | Segunda ejecución de la colección sobre la **misma BD**, sin resetear: demuestra que se puede repetir. | PASA (17 requests, 53 aserciones, 0 fallidas) |
+
+La colección está en `postman/` (ver `postman/README.md`). Cada evidencia guarda la salida literal de newman, el SHA-256 de la colección, los hashes y las versiones. Se ejecutó con la aplicación desde un *worktree* del tag y la colección desde la rama de trabajo, que no existe en el tag: por eso no hace falta comprobar el diff de la app.
+
+Reproducir:
+```powershell
+python scripts/ejecutar_postman.py . http://127.0.0.1:8001 <ruta_al_worktree_del_tag> EV-067 salida.txt "titulo" "objetivo"
+```
+(La app debe estar levantada en esa URL con un seed limpio; ver `postman/README.md`.)
+
 ## Registros de trabajo (para pegar en el Excel)
 
 - `registro_ian.md`: RUN-050 a RUN-060 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009 y CP-010), columnas de la hoja 06.
@@ -60,4 +75,4 @@ python scripts/ejecutar_seguridad.py . http://127.0.0.1:8001
 
 Los veredictos los calcula el script a partir de las respuestas reales. Para repetir la ejecución hay que resetear la BD antes (el caso crea un proveedor y una licitación de control). EV-054 se obtiene con `git diff qa-build-1 <commit> --stat -- app seeds requirements.txt` (debe salir vacío) y EV-055 es una captura manual de la UI.
 
-> Los archivos EV-050 a EV-066 los generó una herramienta de IA: EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`) y EV-059 a EV-064 (ver `05_IA/IA-058.md`). La revisión humana de su contenido está pendiente.
+> Los archivos EV-050 a EV-068, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`) y EV-059 a EV-064 (ver `05_IA/IA-058.md`). La revisión humana de su contenido está pendiente.

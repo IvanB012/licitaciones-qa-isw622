@@ -26,4 +26,5 @@
 - **Entorno de Ian** (distinto al de Iván, que usó Python 3.15.2): Windows 11, Python 3.14.6, pytest 9.2.0.
 - **Duración:** RUN-052 a RUN-060 usan el tiempo que reporta pytest. En RUN-050 y RUN-051 no se midió por RUN; se deja "—" para no inventarla (la corrida de pytest de EV-053 tardó 13,67 s).
 - **Tests añadidos a la ficha:** en RUN-052, RUN-054 y RUN-058 se agregó un test existente porque el resultado esperado de la ficha ("la oferta no se guarda" / "la oferta original no cambia") no lo comprobaban los tests que la ficha lista. Está escrito en la nota de cada evidencia.
+- **Postman (EV-067 y EV-068):** no se registra como RUN porque la colección no es uno de los 20 CP del catálogo; es evidencia complementaria de las pruebas de la API (REQ-001, 002, 003, 005, 006, 007, 008, 009, 011 y 012). Iván decide si la cita en las hojas `06_Ejecuciones` o `12_Automatizacion`.
 - **Pendiente de registrar** (aún no ejecutados): CP-017 (usabilidad, requiere 2 personas) y CP-018 (rendimiento).
