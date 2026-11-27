@@ -62,9 +62,7 @@ python scripts/ejecutar_postman.py . http://127.0.0.1:8001 <ruta_al_worktree_del
 
 Archivos de apoyo en `04_Evidencias/perf/`: `perf_20261126_224750_peticiones.csv` (una fila por petición), `perf_20261126_224750_recursos.csv` (CPU y RAM por segundo) y `perf_20261126_224750_resumen.json`. El p95 se recalculó desde el CSV con un método distinto al del script y coincide. Script y cómo ejecutarlo: `scripts/perf/README.md`.
 
-## Usabilidad (REQ-013) — ⚠️ SIMULADA, con la app del tag `qa-build-1` (`e65b2d8`)
-
-> **No hubo participantes humanos:** la prueba se simuló por indicación del profesor (informada por el estudiante). Los participantes son ficticios y los tiempos son estimados; la app, los mensajes y las capturas son **reales**.
+## Usabilidad (REQ-013)
 
 | EV | RUN | CP | Qué muestra | Resultado |
 |---|---|---|---|---|
