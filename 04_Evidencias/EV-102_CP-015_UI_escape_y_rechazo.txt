@@ -1,0 +1,71 @@
+EV-102 - Seguridad: formulario de la UI rechaza y escapa los nombres no permitidos
+==============================================================================
+Casos de prueba : CP-015
+Requisitos      : REQ-012
+Fecha/hora      : 2026-11-26 21:50:31 -0600
+Commit probado  : cf4a817 (Merge pull request #10 from IvanB012/docs/casos-prueba)
+Build de QA     : qa-build-1 -> e65b2d8  (los commits posteriores solo tocan docs/tests)
+Entorno         : Python 3.14.6 / Windows 11
+Aplicación      : http://127.0.0.1:8001 (BD temporal con el seed de referencia, datos sintéticos)
+Usuario         : operador (credenciales de prueba del README; no se reproducen aquí)
+
+OBJETIVO: Enviar los 4 nombres por el formulario /providers/new y revisar el HTML devuelto; además, un título de licitación con <script>.
+RESULTADO ESPERADO (de las reglas, no del código): 422 con mensaje de error visible; el valor se muestra escapado (sin <script> crudo) y no se guarda; el título con <script> se muestra como texto.
+
+> POST /providers/new  name='<script>alert(1)</script>'
+< HTTP 422   content-type: text/html
+< cuerpo: HTML de 4956 caracteres
+   [OK ] '<script>alert(1)</script>' -> 422 con data-testid="error-message"
+   [OK ] '<script>alert(1)</script>' -> el valor reenviado queda escapado (&lt;script&gt;alert(1)&lt;/script&gt;)
+   [OK ] no aparece el HTML crudo en la respuesta (no se ejecutaría)
+
+> POST /providers/new  name='Acme & Co'
+< HTTP 422   content-type: text/html
+< cuerpo: HTML de 4690 caracteres
+   [OK ] 'Acme & Co' -> 422 con data-testid="error-message"
+   [OK ] 'Acme & Co' -> el valor reenviado queda escapado (Acme &amp; Co)
+
+> POST /providers/new  name='Nombre; DROP TABLE'
+< HTTP 422   content-type: text/html
+< cuerpo: HTML de 4695 caracteres
+   [OK ] 'Nombre; DROP TABLE' -> 422 con data-testid="error-message"
+   [OK ] 'Nombre; DROP TABLE' -> el valor reenviado queda escapado (Nombre; DROP TABLE)
+
+> POST /providers/new  name='Acme 😀'
+< HTTP 422   content-type: text/html
+< cuerpo: HTML de 4683 caracteres
+   [OK ] 'Acme 😀' -> 422 con data-testid="error-message"
+   [OK ] 'Acme 😀' -> el valor reenviado queda escapado (Acme 😀)
+
+> GET /providers
+   [OK ] el listado no contiene ninguno de los 4 nombres
+
+> POST /api/tenders  title='<script>alert(1)</script>'
+< HTTP 201   content-type: application/json
+< cuerpo: {"id":2,"code":"LIC-SEG-XSS","title":"<script>alert(1)</script>","description":null,"budget":"1000000.00","closes_at":"2026-12-02T03:50:32Z","status":"Borrador","created_at":"2026-11-27T03:50:32.117440Z"}
+   [OK ] la licitación con título <script> se guarda como texto (201)
+> GET /tenders
+   [OK ] /tenders: no contiene <script>alert(1)</script> crudo
+   [OK ] /tenders: contiene la versión escapada &lt;script&gt;alert(1)&lt;/script&gt;
+> GET /tenders/2
+   [OK ] /tenders/2: no contiene <script>alert(1)</script> crudo
+   [OK ] /tenders/2: contiene la versión escapada &lt;script&gt;alert(1)&lt;/script&gt;
+
+VERIFICACIONES
+  OK     '<script>alert(1)</script>' -> 422 con data-testid="error-message"
+  OK     '<script>alert(1)</script>' -> el valor reenviado queda escapado (&lt;script&gt;alert(1)&lt;/script&gt;)
+  OK     no aparece el HTML crudo en la respuesta (no se ejecutaría)
+  OK     'Acme & Co' -> 422 con data-testid="error-message"
+  OK     'Acme & Co' -> el valor reenviado queda escapado (Acme &amp; Co)
+  OK     'Nombre; DROP TABLE' -> 422 con data-testid="error-message"
+  OK     'Nombre; DROP TABLE' -> el valor reenviado queda escapado (Nombre; DROP TABLE)
+  OK     'Acme 😀' -> 422 con data-testid="error-message"
+  OK     'Acme 😀' -> el valor reenviado queda escapado (Acme 😀)
+  OK     el listado no contiene ninguno de los 4 nombres
+  OK     la licitación con título <script> se guarda como texto (201)
+  OK     /tenders: no contiene <script>alert(1)</script> crudo
+  OK     /tenders: contiene la versión escapada &lt;script&gt;alert(1)&lt;/script&gt;
+  OK     /tenders/2: no contiene <script>alert(1)</script> crudo
+  OK     /tenders/2: contiene la versión escapada &lt;script&gt;alert(1)&lt;/script&gt;
+
+RESULTADO OBTENIDO: PASA  (15/15 verificaciones)

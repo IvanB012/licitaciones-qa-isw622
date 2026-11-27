@@ -1,0 +1,56 @@
+EV-104 - Seguridad: pruebas automatizadas de CP-015 y CP-016 (incluye el error 500 forzado)
+==============================================================================
+Casos de prueba : CP-015, CP-016
+Requisitos      : REQ-012
+Fecha/hora      : 2026-11-26 21:50:33 -0600
+Commit probado  : cf4a817 (Merge pull request #10 from IvanB012/docs/casos-prueba)
+Build de QA     : qa-build-1 -> e65b2d8  (los commits posteriores solo tocan docs/tests)
+Entorno         : Python 3.14.6 / Windows 11
+Aplicación      : no se usa la app en marcha; pytest crea su propia BD temporal limpia por cada prueba (datos sintéticos)
+
+OBJETIVO: Ejecutar las pruebas pytest asociadas a CP-015 y CP-016.
+RESULTADO ESPERADO (de las reglas, no del código): Todas pasan (incluido el 500 forzado, que devuelve un mensaje genérico sin traza ni 'secretos').
+
+Comando: python -m pytest -v tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza tests/api/test_providers_api.py::test_nombre_invalido_422 tests/api/test_providers_ui.py::test_alta_con_error_se_muestra_en_error_message tests/api/test_providers_ui.py::test_valores_renderizados_quedan_escapados tests/api/test_providers_ui.py::test_nombre_guardado_se_escapa_en_listado_y_edicion tests/api/test_errors_format.py::test_500_api_formato_generico_sin_traza tests/api/test_errors_format.py::test_500_ui_pagina_generica_sin_traza tests/api/test_errors_format.py::test_404_api tests/api/test_providers_api.py::test_error_no_expone_trazas_ni_rutas tests/api/test_offers_ui.py::test_oferta_inexistente_404_en_ui
+
+============================= test session starts =============================
+collecting ... collected 29 items
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[<script>alert(1)</script>] PASSED [  3%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Acme & Co] PASSED [  6%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Nombre; DROP TABLE] PASSED [ 10%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Acme\tCo] PASSED [ 13%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Acme\nCo] PASSED [ 17%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Acme_Co] PASSED [ 20%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Acme-Co] PASSED [ 24%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[Acme \U0001f600] PASSED [ 27%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[O'Brien] PASSED [ 31%]
+tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza[a@b] PASSED [ 34%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[<script>alert(1)</script>] PASSED [ 37%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[Acme & Co] PASSED [ 41%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[Nombre; DROP TABLE] PASSED [ 44%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[] PASSED       [ 48%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[   ] PASSED    [ 51%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[Acme \U0001f600] PASSED [ 55%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[None] PASSED   [ 58%]
+tests/api/test_providers_api.py::test_nombre_invalido_422[42] PASSED     [ 62%]
+tests/api/test_providers_ui.py::test_alta_con_error_se_muestra_en_error_message[Acme & Co-422-solo admite letras] PASSED [ 65%]
+tests/api/test_providers_ui.py::test_alta_con_error_se_muestra_en_error_message[<script>alert(1)</script>-422-solo admite letras] PASSED [ 68%]
+tests/api/test_providers_ui.py::test_alta_con_error_se_muestra_en_error_message[   -422-obligatorio] PASSED [ 72%]
+tests/api/test_providers_ui.py::test_alta_con_error_se_muestra_en_error_message[  tecnolog\xeda   NORTE s.a. -409-Ya existe] PASSED [ 75%]
+tests/api/test_providers_ui.py::test_valores_renderizados_quedan_escapados PASSED [ 79%]
+tests/api/test_providers_ui.py::test_nombre_guardado_se_escapa_en_listado_y_edicion PASSED [ 82%]
+tests/api/test_errors_format.py::test_500_api_formato_generico_sin_traza PASSED [ 86%]
+tests/api/test_errors_format.py::test_500_ui_pagina_generica_sin_traza PASSED [ 89%]
+tests/api/test_errors_format.py::test_404_api PASSED                     [ 93%]
+tests/api/test_providers_api.py::test_error_no_expone_trazas_ni_rutas PASSED [ 96%]
+tests/api/test_offers_ui.py::test_oferta_inexistente_404_en_ui PASSED    [100%]
+============================= 29 passed in 13.67s =============================
+
+   [OK ] pytest terminó con código 0 (0 = todas pasan)
+   [OK ] resumen real de pytest: '29 passed in 13.67s' (sin pruebas fallidas)
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     resumen real de pytest: '29 passed in 13.67s' (sin pruebas fallidas)
+
+RESULTADO OBTENIDO: PASA  (2/2 verificaciones)
