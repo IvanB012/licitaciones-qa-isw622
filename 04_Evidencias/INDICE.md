@@ -21,6 +21,23 @@ git worktree remove --force ..\_tag_qa_build_1
 ```
 (Copiar después `EV-001` a `EV-006` de `04_Evidencias/` del worktree al repositorio de trabajo. RUN-001 tarda unos 2 min 40 s.)
 
+## E2E con Playwright (navegador real) — ejecutado en HEAD `575deaf`, con la app idéntica a la del tag `qa-build-1` (`e65b2d8`)
+
+Los E2E (`tests/e2e/`) no existen en el tag; cada evidencia guarda el hash de HEAD, el de `qa-build-1` y la salida (vacía) de `git diff qa-build-1 HEAD --stat -- app seeds requirements.txt`.
+
+| EV | RUN | CP | Qué demuestra | Resultado |
+|---|---|---|---|---|
+| EV-011 | RUN-011 | CP-011 | Login, proveedor nuevo, licitación nueva (Borrador), publicarla y ofertar con ese proveedor: mensajes y datos en pantalla. | PASA (1 prueba; 5 capturas) |
+| EV-012 | RUN-012 | CP-012 | Detalle de L1: mejor oferta P1, ahorro 10 %, Conveniente, aprueba Gerencia. | PASA (1 prueba; 1 captura) |
+| EV-013 | RUN-013 | CP-013 | L1 en USD: $18 000,00 con tasa y fecha; al volver a CRC los montos son los mismos y los importes guardados no cambian. | PASA (1 prueba; 3 capturas) |
+| EV-014 | RUN-014 | CP-020 | Un proveedor creado sigue en el listado tras detener y volver a levantar el servidor con la misma BD (cierra la brecha de RUN-006). | PASA (1 prueba; 2 capturas) |
+
+Capturas en `04_Evidencias/e2e/` (`EV-0xx_CP-0xx_<paso>.png`, 11 archivos). Reproducir (`python -m playwright install chromium` una sola vez):
+```powershell
+python scripts/ejecutar_cp.py . resumen_e2e.json RUN-011 RUN-012 RUN-013 RUN-014
+pytest tests/e2e -m e2e        # o solo las pruebas, sin generar las evidencias de texto
+```
+
 ## BUG-001 — defecto controlado (REQ-004), rama `lab/bug-001`
 
 Detalle completo en `bug-001.md`. Defecto en `8d33f5b` (tag `bug-001-defecto`); corrección en `5fe825a` (tag `bug-001-fix`).
@@ -109,7 +126,7 @@ Resultado: **3 de 4 tareas sin ayuda** (cumple REQ-013 en el límite). Detalle y
 
 ## Registros de trabajo (para pegar en el Excel)
 
-- `registro_ivan.md`: RUN-001 a RUN-010 (suite completa, CP-001, CP-007, CP-013, CP-014 y CP-020; y BUG-001: CP-003, CP-003, CP-002, CP-019), columnas de la hoja 06.
+- `registro_ivan.md`: RUN-001 a RUN-014 (suite completa, CP-001, CP-007, CP-013, CP-014 y CP-020; BUG-001: CP-003, CP-003, CP-002, CP-019; y E2E: CP-011, CP-012, CP-013 y CP-020), columnas de la hoja 06.
 - `bug-001.md`: ficha del defecto controlado BUG-001.
 - `registro_ian.md`: RUN-050 a RUN-062 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010, CP-018 y CP-017 simulada), columnas de la hoja 06.
 - `seguridad_ian.md`: SEC-001 y SEC-002, columnas de la hoja 13.
@@ -132,6 +149,6 @@ python scripts/ejecutar_seguridad.py . http://127.0.0.1:8001
 
 Los veredictos los calcula el script a partir de las respuestas reales. Para repetir la ejecución hay que resetear la BD antes (el caso crea un proveedor y una licitación de control). EV-054 se obtiene con `git diff qa-build-1 <commit> --stat -- app seeds requirements.txt` (debe salir vacío) y EV-055 es una captura manual de la UI.
 
-> Los archivos EV-001 a EV-006, `registro_ivan.md` y la ampliación del script los generó una herramienta de IA (ver `05_IA/IA-006.md`; revisión humana pendiente). Lo mismo EV-007 a EV-010, EV-015, `bug-001.md` y el soporte de RUN-007 a RUN-010 en el script (ver `05_IA/IA-007.md`; revisión humana pendiente).
+> Los archivos EV-001 a EV-006, `registro_ivan.md` y la ampliación del script los generó una herramienta de IA (ver `05_IA/IA-006.md`; revisión humana pendiente). Lo mismo EV-007 a EV-010, EV-015, `bug-001.md` y el soporte de RUN-007 a RUN-010 en el script (ver `05_IA/IA-007.md`; revisión humana pendiente). Lo mismo EV-011 a EV-014, las 11 capturas de `04_Evidencias/e2e/`, las pruebas E2E y el soporte de RUN-011 a RUN-014 en el script (ver `05_IA/IA-008.md`; revisión humana pendiente).
 >
 > Los archivos EV-050 a EV-074, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`), EV-059 a EV-064 (ver `05_IA/IA-058.md`) y EV-070 a EV-074 con `usabilidad_ian.md` (ver `05_IA/IA-059.md`). La revisión humana consta en los campos de revisión de cada `IA-###` (IA-050 a IA-058); la de `IA-059` está pendiente.

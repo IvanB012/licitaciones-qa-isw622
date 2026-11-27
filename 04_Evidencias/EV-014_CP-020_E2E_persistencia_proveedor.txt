@@ -1,0 +1,35 @@
+EV-014 - CP-020: E2E: un proveedor creado sigue en el listado tras reiniciar el servidor
+==============================================================================
+Caso de prueba  : CP-020
+Requisito       : REQ-011
+Ejecución       : RUN-014
+Fecha/hora      : 2026-11-27 13:42:57 -0600
+Commit probado  : 575deaf ((sin tag exacto))   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+HEAD (completo)  : 575deaf81bcf1aec556e04ec440279efaef91547
+qa-build-1      : e65b2d88667b998ce1b4b0ad9cebc56e1aaebc85
+Los E2E no existen en el tag qa-build-1: se ejecutan en HEAD. La app es la del tag si la salida de estos comandos está vacía:
+  git diff qa-build-1 HEAD --stat -- app seeds requirements.txt  ->  (salida vacía)
+  git diff qa-build-1 --stat -- app seeds requirements.txt (árbol de trabajo)  ->  (salida vacía)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: Navegador Chromium headless contra la app real; proveedor "Proveedor Persistente E2E" creado por la UI; el proceso uvicorn se detiene y se vuelve a levantar con la MISMA BD (sin volver a sembrar).
+RESULTADO ESPERADO (de las reglas, no del código): Tras el reinicio, el proveedor (con su correo) sigue en el listado junto a los del seed. (REQ-011: los datos persisten al reiniciar)
+NOTA: Cierra la brecha conocida de CP-020 (RUN-006): ahora el proveedor se verifica directamente tras un reinicio real del servidor.
+
+Comando: python -m pytest -v -m e2e tests/e2e/test_flujos_e2e.py::test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor
+
+============================= test session starts =============================
+collecting ... collected 1 item
+tests/e2e/test_flujos_e2e.py::test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor[chromium] PASSED [100%]
+============================== 1 passed in 5.19s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor: PASSED en tests/e2e/test_flujos_e2e.py
+  OK     git diff qa-build-1 HEAD --stat -- app seeds requirements.txt: salida vacía (la app es la del tag)
+  OK     captura guardada: 04_Evidencias/e2e/EV-014_CP-020_01_proveedor_antes_de_reiniciar.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-014_CP-020_02_proveedor_despues_de_reiniciar.png
+  OK     resumen real de pytest: '1 passed in 5.19s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (6/6 verificaciones; 1 pruebas pasadas)

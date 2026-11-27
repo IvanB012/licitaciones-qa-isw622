@@ -218,6 +218,49 @@ CASOS += [
 ]
 
 
+# ---- E2E (Playwright): RUN-011 a RUN-014. No existen en el tag qa-build-1: se ejecutan en HEAD y se demuestra que app/seeds/requirements son los del tag ----
+E2E = "tests/e2e/test_flujos_e2e.py"
+CASOS += [
+    {
+        "run": "RUN-011", "ev": "EV-011", "cp": "CP-011", "sel": "RUN-011", "e2e": True, "req": "REQ-001, REQ-002, REQ-004",
+        "archivo": "EV-011_CP-011_E2E_alta_publicar_y_ofertar.txt",
+        "titulo": "E2E: alta de proveedor, alta de licitación, publicar y ofertar",
+        "entradas": "Navegador Chromium headless contra la app real (uvicorn, BD temporal con el seed). Login como admin; proveedor \"Insumos del Sur E2E\"; licitación LIC-E2E-001 (presupuesto 1000000.00, cierre en 3 días); publicar; oferta de 900000.00 con ese proveedor.",
+        "esperado": "El proveedor aparece en el listado; la licitación se crea en Borrador y pasa a Publicada; la oferta se registra y aparece en la tabla de ofertas (mejor oferta, ahorro 10 %). (REQ-001, REQ-002, REQ-004)",
+        "nodos": [f"{E2E}::test_flujo_alta_proveedor_licitacion_publicar_y_ofertar"],
+        "capturas": [f"EV-011_CP-011_{n}.png" for n in ("01_login_panel", "02_proveedor_creado", "03_licitacion_borrador", "04_licitacion_publicada", "05_oferta_registrada")],
+    },
+    {
+        "run": "RUN-012", "ev": "EV-012", "cp": "CP-012", "sel": "RUN-012", "e2e": True, "req": "REQ-007, REQ-008, REQ-009",
+        "archivo": "EV-012_CP-012_E2E_evaluacion_l1.txt",
+        "titulo": "E2E: L1 muestra mejor oferta, ahorro, clasificación y aprobador",
+        "entradas": "Navegador Chromium headless contra la app real con el seed; login como admin; detalle de LIC-2026-001 (presupuesto 10 000 000,00; ofertas P1 = 9 000 000,00 y P2 = 9 500 000,00).",
+        "esperado": "Mejor oferta P1 (Tecnología Norte S.A.); ahorro 10 %; Conveniente; aprueba Gerencia. (REQ-007, REQ-008, REQ-009)",
+        "nodos": [f"{E2E}::test_detalle_de_l1_muestra_mejor_oferta_ahorro_clasificacion_y_aprobador"],
+        "capturas": ["EV-012_CP-012_01_detalle_l1_evaluacion.png"],
+    },
+    {
+        "run": "RUN-013", "ev": "EV-013", "cp": "CP-013", "sel": "RUN-013", "e2e": True, "req": "REQ-010",
+        "archivo": "EV-013_CP-013_E2E_vista_usd.txt",
+        "titulo": "E2E: alternar a USD muestra USD 18 000,00 con tasa y fecha; los importes no cambian",
+        "entradas": "Navegador Chromium headless contra la app real con el seed (tasa CRC 500,00 por USD con fecha actual); detalle de LIC-2026-001 en CRC, luego USD, luego CRC; importes guardados leídos por la API antes y después.",
+        "esperado": "La oferta de P1 se muestra como $18 000,00 (y la de P2 como $19 000,00) con la tasa y su fecha visibles; al volver a CRC los montos son los mismos; los importes CRC guardados no cambian. (REQ-010)",
+        "nodos": [f"{E2E}::test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes"],
+        "capturas": [f"EV-013_CP-013_{n}.png" for n in ("01_l1_en_crc", "02_l1_en_usd", "03_l1_vuelve_a_crc")],
+    },
+    {
+        "run": "RUN-014", "ev": "EV-014", "cp": "CP-020", "sel": "RUN-014", "e2e": True, "req": "REQ-011",
+        "archivo": "EV-014_CP-020_E2E_persistencia_proveedor.txt",
+        "titulo": "E2E: un proveedor creado sigue en el listado tras reiniciar el servidor",
+        "entradas": "Navegador Chromium headless contra la app real; proveedor \"Proveedor Persistente E2E\" creado por la UI; el proceso uvicorn se detiene y se vuelve a levantar con la MISMA BD (sin volver a sembrar).",
+        "esperado": "Tras el reinicio, el proveedor (con su correo) sigue en el listado junto a los del seed. (REQ-011: los datos persisten al reiniciar)",
+        "nodos": [f"{E2E}::test_proveedor_creado_sigue_en_el_listado_tras_reiniciar_el_servidor"],
+        "nota": "Cierra la brecha conocida de CP-020 (RUN-006): ahora el proveedor se verifica directamente tras un reinicio real del servidor.",
+        "capturas": [f"EV-014_CP-020_{n}.png" for n in ("01_proveedor_antes_de_reiniciar", "02_proveedor_despues_de_reiniciar")],
+    },
+]
+
+
 def git(*args):
     return subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, encoding="utf-8").stdout.strip()
 
@@ -227,6 +270,22 @@ def pytest_version():
     return (p.stdout + p.stderr).strip().splitlines()[0]
 
 
+DIFF_PATHS = ["app", "seeds", "requirements.txt"]
+
+
+def _cabecera_e2e():
+    """Demuestra que la app probada es la del tag: HEAD, qa-build-1 y la salida de git diff (debe ser vacía)."""
+    d_head = git("diff", "qa-build-1", "HEAD", "--stat", "--", *DIFF_PATHS)
+    d_tree = git("diff", "qa-build-1", "--stat", "--", *DIFF_PATHS)
+    return [
+        f"HEAD (completo)  : {git('rev-parse', 'HEAD')}",
+        f"qa-build-1      : {git('rev-list', '-n', '1', 'qa-build-1')}",
+        "Los E2E no existen en el tag qa-build-1: se ejecutan en HEAD. La app es la del tag si la salida de estos comandos está vacía:",
+        f"  git diff qa-build-1 HEAD --stat -- app seeds requirements.txt  ->  {d_head or '(salida vacía)'}",
+        f"  git diff qa-build-1 --stat -- app seeds requirements.txt (árbol de trabajo)  ->  {d_tree or '(salida vacía)'}",
+    ]
+
+
 SELECCION = set(sys.argv[3:])  # opcional: ids de CP a ejecutar (por defecto, todos), p. ej.: CP-004 CP-005
 resumen = []
 for caso in CASOS:
@@ -234,7 +293,7 @@ for caso in CASOS:
         continue
     inicio = datetime.datetime.now().astimezone()
     t0 = time.perf_counter()
-    cmd = [sys.executable, "-m", "pytest", "-v", "-p", "no:cacheprovider", "--no-header", "-W", "ignore", *caso["nodos"]]
+    cmd = [sys.executable, "-m", "pytest", "-v", "-p", "no:cacheprovider", "--no-header", "-W", "ignore", *(["-m", "e2e"] if caso.get("e2e") else []), *caso["nodos"]]
     p = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
     duracion = time.perf_counter() - t0
     salida = [ln for ln in (p.stdout + p.stderr).splitlines() if ln.strip()]
@@ -250,13 +309,14 @@ for caso in CASOS:
         f"Fecha/hora      : {inicio.strftime('%Y-%m-%d %H:%M:%S %z')}",
         f"Commit probado  : {git('rev-parse', '--short', 'HEAD')} ({descr})   build de QA: qa-build-1 -> {git('rev-list', '-n', '1', '--abbrev-commit', 'qa-build-1')}",
         f"Árbol de trabajo: {'limpio (sin cambios en archivos versionados)' if not sucio else 'CON CAMBIOS: ' + sucio}",
+        *(_cabecera_e2e() if caso.get("e2e") else []),
         f"Entorno         : Python {platform.python_version()} / {platform.system()} {platform.release()} / {pytest_version()} / BD SQLite temporal por prueba",
         "",
         f"ENTRADAS EXACTAS: {caso['entradas']}",
         f"RESULTADO ESPERADO (de las reglas, no del código): {caso['esperado']}",
         *([f"NOTA: {caso['nota']}"] if caso.get("nota") else []),
         "",
-        ("Comando: python -m pytest -v " + " ".join(caso["nodos"])).strip(),
+        ("Comando: python -m pytest -v " + ("-m e2e " if caso.get("e2e") else "") + " ".join(caso["nodos"])).strip(),
         "",
         *salida,
         "",
@@ -268,6 +328,10 @@ for caso in CASOS:
         ok_pass = any(ln.startswith(nodo) and "PASSED" in ln for ln in salida)
         hay_fallo = any(ln.startswith(nodo) and ("FAILED" in ln or "ERROR" in ln) for ln in salida)
         checks.append((f"{nodo.split('::', 1)[1]}: PASSED en {nodo.split('::', 1)[0]}", ok_pass and not hay_fallo))
+    if caso.get("e2e"):
+        checks.append(("git diff qa-build-1 HEAD --stat -- app seeds requirements.txt: salida vacía (la app es la del tag)", git("diff", "qa-build-1", "HEAD", "--stat", "--", *DIFF_PATHS) == ""))
+        for cap in caso.get("capturas", []):
+            checks.append((f"captura guardada: 04_Evidencias/e2e/{cap}", (OUT / "e2e" / cap).is_file()))
     resumen_py = next((ln for ln in reversed(salida) if " passed" in ln or " failed" in ln or " error" in ln), "")
     fallan = re.search(r"(\d+) (failed|error)", resumen_py)
     checks.append((f"resumen real de pytest: {resumen_py.strip('= ')!r} (sin fallos ni errores)", not fallan and "passed" in resumen_py))

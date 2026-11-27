@@ -1,0 +1,35 @@
+EV-013 - CP-013: E2E: alternar a USD muestra USD 18 000,00 con tasa y fecha; los importes no cambian
+==============================================================================
+Caso de prueba  : CP-013
+Requisito       : REQ-010
+Ejecución       : RUN-013
+Fecha/hora      : 2026-11-27 13:42:51 -0600
+Commit probado  : 575deaf ((sin tag exacto))   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+HEAD (completo)  : 575deaf81bcf1aec556e04ec440279efaef91547
+qa-build-1      : e65b2d88667b998ce1b4b0ad9cebc56e1aaebc85
+Los E2E no existen en el tag qa-build-1: se ejecutan en HEAD. La app es la del tag si la salida de estos comandos está vacía:
+  git diff qa-build-1 HEAD --stat -- app seeds requirements.txt  ->  (salida vacía)
+  git diff qa-build-1 --stat -- app seeds requirements.txt (árbol de trabajo)  ->  (salida vacía)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: Navegador Chromium headless contra la app real con el seed (tasa CRC 500,00 por USD con fecha actual); detalle de LIC-2026-001 en CRC, luego USD, luego CRC; importes guardados leídos por la API antes y después.
+RESULTADO ESPERADO (de las reglas, no del código): La oferta de P1 se muestra como $18 000,00 (y la de P2 como $19 000,00) con la tasa y su fecha visibles; al volver a CRC los montos son los mismos; los importes CRC guardados no cambian. (REQ-010)
+
+Comando: python -m pytest -v -m e2e tests/e2e/test_flujos_e2e.py::test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes
+
+============================= test session starts =============================
+collecting ... collected 1 item
+tests/e2e/test_flujos_e2e.py::test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes[chromium] PASSED [100%]
+============================== 1 passed in 3.72s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_vista_usd_de_l1_muestra_tasa_y_fecha_y_no_cambia_los_importes: PASSED en tests/e2e/test_flujos_e2e.py
+  OK     git diff qa-build-1 HEAD --stat -- app seeds requirements.txt: salida vacía (la app es la del tag)
+  OK     captura guardada: 04_Evidencias/e2e/EV-013_CP-013_01_l1_en_crc.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-013_CP-013_02_l1_en_usd.png
+  OK     captura guardada: 04_Evidencias/e2e/EV-013_CP-013_03_l1_vuelve_a_crc.png
+  OK     resumen real de pytest: '1 passed in 3.72s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (7/7 verificaciones; 1 pruebas pasadas)
