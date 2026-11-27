@@ -1,0 +1,151 @@
+EV-015 - BUG-001: suite completa de pytest con el defecto introducido (6 fallos de 928)
+==============================================================================
+Caso de prueba  : (suite completa; evidencia complementaria de RUN-007 / EV-007)
+Requisito       : REQ-004
+Defecto         : BUG-001
+Fecha/hora      : 2026-11-27 11:23:55 -0600 (fin de la ejecución; fecha del archivo de salida, duró 140,69 s)
+Commit probado  : 8d33f5b (bug-001-defecto)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+Cambio hecho    : app/rules/offers.py, `if now >= closes_at:` cambiado a `if now > closes_at:` (una oferta exactamente en el cierre se acepta; viola REQ-004)
+
+RESULTADO ESPERADO (de las reglas, no del código): con el defecto, las pruebas que verifican que una oferta EXACTAMENTE en el cierre se rechaza deben fallar; el resto debe pasar. (REQ-004: `now >= cierre` rechaza)
+
+Comando: python -m pytest -q -p no:cacheprovider -W ignore
+(salida literal de pytest; la salida se guardó tal cual, sin edición)
+
+........................................................................ [  7%]
+........................................................................ [ 15%]
+........................................................................ [ 23%]
+F.....................F....F..............F.....F....................... [ 31%]
+........................................................................ [ 38%]
+........................................................................ [ 46%]
+........................................................................ [ 54%]
+........................................................................ [ 62%]
+........................................................................ [ 69%]
+........................................................................ [ 77%]
+........................................F............................... [ 85%]
+........................................................................ [ 93%]
+................................................................         [100%]
+================================== FAILURES ===================================
+__________________ test_exactamente_en_el_cierre_se_rechaza ___________________
+
+op = <starlette.testclient.TestClient object at 0x000002C38A700D10>
+seeded = SeedResult(admin_id=1, operador_id=2, p1_id=1, p2_id=2, tender_id=1, offer_p1_id=1, offer_p2_id=2, exchange_rate_id=1)
+p3 = <app.models.Provider object at 0x000002C38A8EF3F0>
+clock = <app.clock.FakeClock object at 0x000002C38B07AFD0>
+
+    def test_exactamente_en_el_cierre_se_rechaza(op, seeded, p3, clock):  # REQ-004
+        clock.set(clock.now() + timedelta(hours=48))  # == closes_at
+>       _error(_offer(op, seeded.tender_id, p3.id, "9000000.00"), 409, "licitacion_vencida")
+
+tests\api\test_offers_api.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+r = <Response [201 Created]>, status = 409, code = 'licitacion_vencida'
+
+    def _error(r, status, code):
+>       assert r.status_code == status, r.text
+E       AssertionError: {"id":3,"tender_id":1,"provider_id":3,"amount":"9000000.00","created_at":"2026-11-28T12:00:00Z"}
+E       assert 201 == 409
+E        +  where 201 = <Response [201 Created]>.status_code
+
+tests\api\test_offers_api.py:47: AssertionError
+__________________ test_editar_exactamente_en_el_cierre_409 ___________________
+
+op = <starlette.testclient.TestClient object at 0x000002C38AE22580>
+seeded = SeedResult(admin_id=1, operador_id=2, p1_id=1, p2_id=2, tender_id=1, offer_p1_id=1, offer_p2_id=2, exchange_rate_id=1)
+clock = <app.clock.FakeClock object at 0x000002C38D005EA0>
+
+    def test_editar_exactamente_en_el_cierre_409(op, seeded, clock):  # REQ-004
+        clock.set(clock.now() + timedelta(hours=48))
+>       _error(op.put(f"/api/offers/{seeded.offer_p1_id}", json={"amount": "8000000.00"}), 409, "licitacion_vencida")
+
+tests\api\test_offers_api.py:233: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+r = <Response [200 OK]>, status = 409, code = 'licitacion_vencida'
+
+    def _error(r, status, code):
+>       assert r.status_code == status, r.text
+E       AssertionError: {"id":1,"tender_id":1,"provider_id":1,"amount":"8000000.00","created_at":"2026-11-26T12:00:00Z"}
+E       assert 200 == 409
+E        +  where 200 = <Response [200 OK]>.status_code
+
+tests\api\test_offers_api.py:47: AssertionError
+___________________________ test_borrar_vencida_409 ___________________________
+
+op = <starlette.testclient.TestClient object at 0x000002C38D00F020>
+seeded = SeedResult(admin_id=1, operador_id=2, p1_id=1, p2_id=2, tender_id=1, offer_p1_id=1, offer_p2_id=2, exchange_rate_id=1)
+clock = <app.clock.FakeClock object at 0x000002C38ADDDA40>
+
+    def test_borrar_vencida_409(op, seeded, clock):  # REQ-004
+        clock.set(clock.now() + timedelta(hours=48))
+>       _error(op.delete(f"/api/offers/{seeded.offer_p1_id}"), 409, "licitacion_vencida")
+
+tests\api\test_offers_api.py:259: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+r = <Response [204 No Content]>, status = 409, code = 'licitacion_vencida'
+
+    def _error(r, status, code):
+>       assert r.status_code == status, r.text
+E       AssertionError: 
+E       assert 204 == 409
+E        +  where 204 = <Response [204 No Content]>.status_code
+
+tests\api\test_offers_api.py:47: AssertionError
+____________ test_oferta_exactamente_en_el_cierre_rechazada_por_ui ____________
+
+ui = <starlette.testclient.TestClient object at 0x000002C38CCE9590>
+seeded = SeedResult(admin_id=1, operador_id=2, p1_id=1, p2_id=2, tender_id=1, offer_p1_id=1, offer_p2_id=2, exchange_rate_id=1)
+p3 = <app.models.Provider object at 0x000002C38ADB71C0>
+clock = <app.clock.FakeClock object at 0x000002C38A657660>
+db = <sqlalchemy.orm.session.Session object at 0x000002C38CFB1FD0>
+
+    def test_oferta_exactamente_en_el_cierre_rechazada_por_ui(ui, seeded, p3, clock, db):  # REQ-004
+        clock.set(clock.now() + timedelta(hours=48))
+        r = _post(ui, seeded.tender_id, p3.id, "9000000.00")
+>       assert r.status_code == 409 and "venció el plazo" in r.text
+E       assert (303 == 409)
+E        +  where 303 = <Response [303 See Other]>.status_code
+
+tests\api\test_offers_ui.py:101: AssertionError
+_____________ test_eliminar_con_licitacion_vencida_muestra_error ______________
+
+ui = <starlette.testclient.TestClient object at 0x000002C38D3598C0>
+seeded = SeedResult(admin_id=1, operador_id=2, p1_id=1, p2_id=2, tender_id=1, offer_p1_id=1, offer_p2_id=2, exchange_rate_id=1)
+clock = <app.clock.FakeClock object at 0x000002C38D285EA0>
+db = <sqlalchemy.orm.session.Session object at 0x000002C38D420EC0>
+
+    def test_eliminar_con_licitacion_vencida_muestra_error(ui, seeded, clock, db):  # REQ-004
+        clock.set(clock.now() + timedelta(hours=48))
+        ui.post(f"/offers/{seeded.offer_p2_id}/delete", follow_redirects=False)
+        page = ui.get(f"/tenders/{seeded.tender_id}").text
+>       assert 'data-testid="flash-error"' in page and "venció el plazo" in page
+E       assert ('data-testid="flash-error"' in '<!doctype html>\n<html lang="es">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-wi...ter>\n\n<script src="http://testserver/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>\n</body>\n</html>')
+
+tests\api\test_offers_ui.py:147: AssertionError
+__________________ test_exactamente_en_el_cierre_se_rechaza ___________________
+
+    def test_exactamente_en_el_cierre_se_rechaza():  # REQ-004 (límite clave)
+>       with pytest.raises(Conflict) as exc:
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE Conflict
+
+tests\unit\test_offer_rules.py:21: Failed
+=========================== short test summary info ===========================
+FAILED tests/api/test_offers_api.py::test_exactamente_en_el_cierre_se_rechaza
+FAILED tests/api/test_offers_api.py::test_editar_exactamente_en_el_cierre_409
+FAILED tests/api/test_offers_api.py::test_borrar_vencida_409 - AssertionError: 
+FAILED tests/api/test_offers_ui.py::test_oferta_exactamente_en_el_cierre_rechazada_por_ui
+FAILED tests/api/test_offers_ui.py::test_eliminar_con_licitacion_vencida_muestra_error
+FAILED tests/unit/test_offer_rules.py::test_exactamente_en_el_cierre_se_rechaza
+6 failed, 922 passed in 140.69s (0:02:20)
+
+VERIFICACIONES
+  OK     pytest terminó con código distinto de 0 (esperado con el defecto): 6 failed, 922 passed (928 en total)
+  OK     los 6 fallos son pruebas del instante exacto del cierre (oferta, edición y borrado en T; ver lista FAILED)
+  OK     las otras 922 pruebas pasan (el defecto no afecta nada más)
+
+RESULTADO OBTENIDO: FALLA CON EL DEFECTO, COMO SE ESPERABA  (6 de 928 pruebas fallan: 2 de ellas son las de CP-003, ver EV-007)

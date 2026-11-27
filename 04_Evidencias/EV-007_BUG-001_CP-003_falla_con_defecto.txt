@@ -1,0 +1,70 @@
+EV-007 - CP-003: BUG-001 - CP-003 con el defecto introducido: oferta exactamente en el cierre
+==============================================================================
+Caso de prueba  : CP-003
+Requisito       : REQ-004
+Ejecución       : RUN-007
+Fecha/hora      : 2026-11-27 11:21:23 -0600
+Commit probado  : 8d33f5b (bug-001-defecto)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: ahora = T-1 s (válida); ahora = T (rechazada); ahora = T+1 s (rechazada). Reloj controlado con FakeClock.
+RESULTADO ESPERADO (de las reglas, no del código): En T-1 s se acepta; en T y en T+1 s se rechaza (now >= cierre rechaza) con 409 licitacion_vencida y la oferta no se guarda. (REQ-004)
+NOTA: EJECUCIÓN SOBRE EL COMMIT DEL DEFECTO (tag bug-001-defecto): en app/rules/offers.py la comparación `now >= closes_at` se cambió a `now > closes_at`. Se espera que FALLEN los tests que prueban el instante exacto del cierre. No se corrigió nada antes de ejecutar.
+
+Comando: python -m pytest -v tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta tests/unit/test_offer_rules.py::test_exactamente_en_el_cierre_se_rechaza tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza tests/api/test_offers_api.py::test_un_segundo_antes_del_cierre_se_acepta tests/api/test_offers_api.py::test_exactamente_en_el_cierre_se_rechaza tests/api/test_offers_api.py::test_un_segundo_despues_del_cierre_se_rechaza tests/api/test_offers_api.py::test_oferta_rechazada_por_plazo_no_se_guarda
+
+============================= test session starts =============================
+collecting ... collected 11 items
+tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta[delta0] PASSED [  9%]
+tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta[delta1] PASSED [ 18%]
+tests/unit/test_offer_rules.py::test_antes_del_cierre_se_acepta[delta2] PASSED [ 27%]
+tests/unit/test_offer_rules.py::test_exactamente_en_el_cierre_se_rechaza FAILED [ 36%]
+tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza[delta0] PASSED [ 45%]
+tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza[delta1] PASSED [ 54%]
+tests/unit/test_offer_rules.py::test_despues_del_cierre_se_rechaza[delta2] PASSED [ 63%]
+tests/api/test_offers_api.py::test_un_segundo_antes_del_cierre_se_acepta PASSED [ 72%]
+tests/api/test_offers_api.py::test_exactamente_en_el_cierre_se_rechaza FAILED [ 81%]
+tests/api/test_offers_api.py::test_un_segundo_despues_del_cierre_se_rechaza PASSED [ 90%]
+tests/api/test_offers_api.py::test_oferta_rechazada_por_plazo_no_se_guarda PASSED [100%]
+================================== FAILURES ===================================
+__________________ test_exactamente_en_el_cierre_se_rechaza ___________________
+    def test_exactamente_en_el_cierre_se_rechaza():  # REQ-004 (límite clave)
+>       with pytest.raises(Conflict) as exc:
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE Conflict
+tests\unit\test_offer_rules.py:21: Failed
+__________________ test_exactamente_en_el_cierre_se_rechaza ___________________
+op = <starlette.testclient.TestClient object at 0x000001F844F6A5D0>
+seeded = SeedResult(admin_id=1, operador_id=2, p1_id=1, p2_id=2, tender_id=1, offer_p1_id=1, offer_p2_id=2, exchange_rate_id=1)
+p3 = <app.models.Provider object at 0x000001F844F848D0>
+clock = <app.clock.FakeClock object at 0x000001F844EC0A50>
+    def test_exactamente_en_el_cierre_se_rechaza(op, seeded, p3, clock):  # REQ-004
+        clock.set(clock.now() + timedelta(hours=48))  # == closes_at
+>       _error(_offer(op, seeded.tender_id, p3.id, "9000000.00"), 409, "licitacion_vencida")
+tests\api\test_offers_api.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+r = <Response [201 Created]>, status = 409, code = 'licitacion_vencida'
+    def _error(r, status, code):
+>       assert r.status_code == status, r.text
+E       AssertionError: {"id":3,"tender_id":1,"provider_id":3,"amount":"9000000.00","created_at":"2026-11-28T12:00:00Z"}
+E       assert 201 == 409
+E        +  where 201 = <Response [201 Created]>.status_code
+tests\api\test_offers_api.py:47: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/unit/test_offer_rules.py::test_exactamente_en_el_cierre_se_rechaza
+FAILED tests/api/test_offers_api.py::test_exactamente_en_el_cierre_se_rechaza
+========================= 2 failed, 9 passed in 1.51s =========================
+
+VERIFICACIONES
+  FALLA  pytest terminó con código 1 (0 = todas pasan)
+  OK     test_antes_del_cierre_se_acepta: PASSED en tests/unit/test_offer_rules.py
+  FALLA  test_exactamente_en_el_cierre_se_rechaza: PASSED en tests/unit/test_offer_rules.py
+  OK     test_despues_del_cierre_se_rechaza: PASSED en tests/unit/test_offer_rules.py
+  OK     test_un_segundo_antes_del_cierre_se_acepta: PASSED en tests/api/test_offers_api.py
+  FALLA  test_exactamente_en_el_cierre_se_rechaza: PASSED en tests/api/test_offers_api.py
+  OK     test_un_segundo_despues_del_cierre_se_rechaza: PASSED en tests/api/test_offers_api.py
+  OK     test_oferta_rechazada_por_plazo_no_se_guarda: PASSED en tests/api/test_offers_api.py
+  FALLA  resumen real de pytest: '2 failed, 9 passed in 1.51s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: FALLA  (5/9 verificaciones; 9 pruebas pasadas)
