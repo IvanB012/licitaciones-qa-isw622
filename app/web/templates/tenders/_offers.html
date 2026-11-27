@@ -10,7 +10,10 @@
       <tbody>
         {% for o in offers %}
         <tr data-testid="offer-row-{{ o.id }}">
-          <td data-testid="offer-provider-{{ o.id }}">{{ o.provider.name }}</td>
+          <td data-testid="offer-provider-{{ o.id }}">
+            {{ o.provider.name }}
+            {% if evaluation.best is not none and evaluation.best.id == o.id %}<span class="badge text-bg-success ms-1" data-testid="offer-best-{{ o.id }}">Mejor oferta</span>{% endif %}
+          </td>
           <td class="text-end text-nowrap" data-testid="offer-amount-{{ o.id }}">{{ o.amount_cents | format_display(currency, rate.rate) }}</td>
           <td class="text-nowrap">{{ o.created_at | cr_datetime('%d/%m/%Y %H:%M:%S') }}</td>
           <td class="text-end text-nowrap">
