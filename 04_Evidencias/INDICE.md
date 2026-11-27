@@ -54,10 +54,19 @@ python scripts/ejecutar_postman.py . http://127.0.0.1:8001 <ruta_al_worktree_del
 ```
 (La app debe estar levantada en esa URL con un seed limpio; ver `postman/README.md`.)
 
+## Rendimiento (REQ-014) — ejecutado con la app del tag `qa-build-1` (`e65b2d8`)
+
+| EV | RUN | CP | Qué demuestra | Resultado |
+|---|---|---|---|---|
+| EV-069 | RUN-061 | CP-018 | `GET /api/tenders` con 5 usuarios virtuales durante 30 s: 4 024 peticiones, 0 errores, **p95 = 54,59 ms** (umbral ≤ 1 500 ms), 134 req/s; CPU y RAM del servidor y configuración de la máquina. | CUMPLE |
+
+Archivos de apoyo en `04_Evidencias/perf/`: `perf_20261126_224750_peticiones.csv` (una fila por petición), `perf_20261126_224750_recursos.csv` (CPU y RAM por segundo) y `perf_20261126_224750_resumen.json`. El p95 se recalculó desde el CSV con un método distinto al del script y coincide. Script y cómo ejecutarlo: `scripts/perf/README.md`.
+
 ## Registros de trabajo (para pegar en el Excel)
 
-- `registro_ian.md`: RUN-050 a RUN-060 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009 y CP-010), columnas de la hoja 06.
+- `registro_ian.md`: RUN-050 a RUN-061 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010 y CP-018), columnas de la hoja 06.
 - `seguridad_ian.md`: SEC-001 y SEC-002, columnas de la hoja 13.
+- `rendimiento_ian.md`: PERF-001, columnas de la hoja 15.
 
 > **Renumeración:** estas evidencias se crearon como EV-101 a EV-104 y el registro de IA como IA-054. Se renombraron a EV-050 a EV-053 e IA-056 para respetar los rangos de IDs de Ian. Solo cambia el identificador: el contenido es el de la ejecución del 26-nov-2026 a las 21:50.
 
@@ -75,4 +84,4 @@ python scripts/ejecutar_seguridad.py . http://127.0.0.1:8001
 
 Los veredictos los calcula el script a partir de las respuestas reales. Para repetir la ejecución hay que resetear la BD antes (el caso crea un proveedor y una licitación de control). EV-054 se obtiene con `git diff qa-build-1 <commit> --stat -- app seeds requirements.txt` (debe salir vacío) y EV-055 es una captura manual de la UI.
 
-> Los archivos EV-050 a EV-068, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`) y EV-059 a EV-064 (ver `05_IA/IA-058.md`). La revisión humana de su contenido está pendiente.
+> Los archivos EV-050 a EV-068, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`) y EV-059 a EV-064 (ver `05_IA/IA-058.md`). La revisión humana de su contenido está pendiente.

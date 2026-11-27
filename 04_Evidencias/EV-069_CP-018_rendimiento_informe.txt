@@ -1,0 +1,32 @@
+EV-069 - CP-018: Rendimiento del listado, 5 usuarios virtuales durante 30 s
+==============================================================================
+Caso de prueba  : CP-018
+Requisito       : REQ-014
+Ejecución       : RUN-061
+Fecha/hora      : 2026-11-26 22:47:50 -0600
+Aplicación      : commit e65b2d8 (qa-build-1) = build de QA qa-build-1; http://127.0.0.1:8001; BD SQLite con el seed de referencia (datos sintéticos)
+Script          : scripts/perf/perf_get_listado.py (commit fe6fc24)
+Entorno         : Python 3.14.6 / httpx 0.29.0 / psutil 7.2.2
+Máquina         : 13th Gen Intel(R) Core(TM) i7-1355U (12 CPU lógicas), 15.6 GB de RAM, Windows 11 (10.0.26200)
+Usuario         : operador (credenciales de prueba del README; no se reproducen aquí)
+
+OBJETIVO: GET /api/tenders con 5 usuarios virtuales concurrentes durante 30 s sobre la aplicación local.
+RESULTADO ESPERADO (de las reglas, no del código): p95 <= 1500 ms y tasa de error <= 5 %. (REQ-014)
+
+RESULTADOS
+  Peticiones totales : 4024  (errores: 0)
+  Duración real      : 30.02 s     Throughput: 134.05 req/s
+  Tiempo de respuesta: media 37.27 ms · mín 18.22 · p50 35.4 · p95 54.59 · p99 66.5 · máx 92.63 ms
+  Tasa de error      : 0.0 %
+  CPU del servidor   : mín 99.3 · prom 124.2 · máx 139.5 %  (de un núcleo; proceso pid 37160)
+  RAM del servidor   : mín 97.3 · prom 97.5 · máx 97.5 MB
+  CPU total máquina  : mín 46.5 · prom 61.3 · máx 91.6 %   (29 muestras, 1 por segundo)
+
+VERIFICACIONES
+  OK     los 5 usuarios iniciaron sesión antes de empezar la carga
+  OK     p95 = 54.59 ms (umbral <= 1500 ms)
+  OK     tasa de error = 0.0 % (umbral <= 5 %)
+
+RESULTADO OBTENIDO: CUMPLE  (p95 54.59 ms; error 0.0 %)
+
+Archivos generados: perf_20261126_224750_peticiones.csv, perf_20261126_224750_resumen.json, perf_20261126_224750_recursos.csv (en perf/)

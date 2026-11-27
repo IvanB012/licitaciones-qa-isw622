@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "fecha": "2026-11-26 22:47:50 -0600",
+    "url": "http://127.0.0.1:8001",
+    "ruta": "/api/tenders",
+    "usuarios": 5,
+    "duracion_pedida_s": 30,
+    "commit_app": "e65b2d8",
+    "tag_app": "qa-build-1",
+    "commit_script": "fe6fc24",
+    "proceso_servidor": {
+      "pid": 37160,
+      "nombre": "python.exe"
+    },
+    "maquina": {
+      "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+      "cpus_logicas": 12,
+      "ram_total_gb": 15.6,
+      "so": "Windows 11 (10.0.26200)",
+      "python": "3.14.6",
+      "httpx": "0.29.0",
+      "psutil": "7.2.2"
+    }
+  },
+  "metricas": {
+    "peticiones": 4024,
+    "errores": 0,
+    "tasa_error_pct": 0.0,
+    "throughput_rps": 134.05,
+    "duracion_real_s": 30.02,
+    "media_ms": 37.27,
+    "min_ms": 18.22,
+    "p50_ms": 35.4,
+    "p95_ms": 54.59,
+    "p99_ms": 66.5,
+    "max_ms": 92.63,
+    "muestras_recursos": 29,
+    "cpu_proceso_pct": {
+      "min": 99.3,
+      "prom": 124.2,
+      "max": 139.5
+    },
+    "ram_proceso_mb": {
+      "min": 97.3,
+      "prom": 97.5,
+      "max": 97.5
+    },
+    "cpu_sistema_pct": {
+      "min": 46.5,
+      "prom": 61.3,
+      "max": 91.6
+    }
+  },
+  "umbral": {
+    "p95_ms": 1500.0,
+    "error_pct": 5.0
+  },
+  "veredicto": "Cumple"
+}
