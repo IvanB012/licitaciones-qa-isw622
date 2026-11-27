@@ -13,9 +13,26 @@ Cada archivo `EV-###_*.txt` es la **salida literal** de una ejecución real. Tod
 | EV-054 | CP-015, CP-016 | Respaldo de build: el código de la app (`app/`, `seeds/`, `requirements.txt`) es idéntico entre el tag `qa-build-1` (`e65b2d8`) y el commit donde se ejecutó la seguridad (`cf4a817`) y `origin/main`. Guarda los hashes. | PASA (2/2) |
 | EV-055 | CP-015 | Captura de la UI: el formulario de proveedor rechaza `<script>alert(1)</script>` con el mensaje de error, muestra el valor como texto y no aparece ningún diálogo. | Captura (ver imagen) |
 
+## Ejecución de CP unitarios y de API — ejecutado exactamente sobre el tag `qa-build-1` (`e65b2d8`)
+
+| EV | RUN | CP | Qué demuestra | Resultado |
+|---|---|---|---|---|
+| EV-056 | RUN-052 | CP-003 | Ofertas antes, exactamente en y después del cierre: T−1 s se acepta; T y T+1 s se rechazan con 409 `licitacion_vencida` y no se guardan (regla pura y API con FakeClock). | PASA (11 pruebas) |
+| EV-057 | RUN-053 | CP-002 | Oferta igual al presupuesto (`1000000.00`) es válida; presupuesto + 0,01 (`1000000.01`) se rechaza con 422 `monto_excede_presupuesto`. | PASA (12 pruebas) |
+| EV-058 | RUN-054 | CP-019 | Oferta de `0`, `0.00` y negativos se rechaza con 422 `monto_invalido`; la BD también lo rechaza y la UI no guarda nada. | PASA (20 pruebas) |
+
+Cada archivo guarda la salida literal de pytest, el commit, el estado del árbol (limpio) y el entorno. En RUN-052 y RUN-054 se añadió un test que la ficha no lista, porque el resultado esperado exige que la oferta rechazada no se guarde; queda escrito en la nota de cada evidencia.
+
+Reproducir (⚠️ sin hacer commits estando en el tag):
+```powershell
+git checkout qa-build-1
+python scripts/ejecutar_cp.py . resumen_cp.json
+git checkout main
+```
+
 ## Registros de trabajo (para pegar en el Excel)
 
-- `registro_ian.md`: RUN-050 (CP-015) y RUN-051 (CP-016), columnas de la hoja 06.
+- `registro_ian.md`: RUN-050 a RUN-054 (CP-015, CP-016, CP-003, CP-002 y CP-019), columnas de la hoja 06.
 - `seguridad_ian.md`: SEC-001 y SEC-002, columnas de la hoja 13.
 
 > **Renumeración:** estas evidencias se crearon como EV-101 a EV-104 y el registro de IA como IA-054. Se renombraron a EV-050 a EV-053 e IA-056 para respetar los rangos de IDs de Ian. Solo cambia el identificador: el contenido es el de la ejecución del 26-nov-2026 a las 21:50.
@@ -34,4 +51,4 @@ python scripts/ejecutar_seguridad.py . http://127.0.0.1:8001
 
 Los veredictos los calcula el script a partir de las respuestas reales. Para repetir la ejecución hay que resetear la BD antes (el caso crea un proveedor y una licitación de control). EV-054 se obtiene con `git diff qa-build-1 <commit> --stat -- app seeds requirements.txt` (debe salir vacío) y EV-055 es una captura manual de la UI.
 
-> Los archivos EV-050 a EV-055 los generó una herramienta de IA (ver `05_IA/IA-056.md`). La revisión humana de su contenido está pendiente.
+> Los archivos EV-050 a EV-055 los generó una herramienta de IA (ver `05_IA/IA-056.md`) y EV-056 a EV-058 también (ver `05_IA/IA-057.md`). La revisión humana de su contenido está pendiente.
