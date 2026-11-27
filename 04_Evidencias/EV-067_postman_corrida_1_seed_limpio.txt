@@ -1,0 +1,133 @@
+EV-067 - Postman: colección completa sobre seed limpio
+==============================================================================
+Herramienta     : Postman (colección v2.1) ejecutada con newman por línea de comandos
+Fecha/hora      : 2026-11-26 22:40:09 -0600
+Aplicación      : commit e65b2d8 (qa-build-1) = build de QA qa-build-1; ejecutada desde un worktree del tag, http://127.0.0.1:8001
+                  árbol de la app: limpio; BD SQLite temporal con el seed de referencia
+Colección       : postman/licitaciones.postman_collection.json (SHA-256 c5f7fc779c28a295…) — rama test/postman, base 232b3d5
+Entorno         : newman 6.2.3, Node v24.22.1, Windows 11; app con Python 3.14.6
+Usuario         : operador (credenciales de prueba del README; no se reproducen aquí)
+
+OBJETIVO: Ejecutar las 17 peticiones de la colección (éxitos y escenarios negativos de la API) sobre una BD recién sembrada.
+RESULTADO ESPERADO (de las reglas, no del código): las 17 peticiones se cumplen con el código HTTP y el cuerpo de los REQ-001, 002, 003, 005, 006, 007, 008, 009, 011 y 012; los errores tienen exactamente {error, detalle}.
+
+$ npx newman run postman/licitaciones.postman_collection.json -e postman/local.postman_environment.json --env-var base_url=http://127.0.0.1:8001
+
+newman
+Sistema de Gestión de Licitaciones (ISW-622)
+→ 01 · Health: la API responde
+  GET http://127.0.0.1:8001/api/health [200 OK, 140B, 96ms]
+  √  HTTP 200 OK
+  √  status = ok
+→ 02 · Limpiar sesión previa
+  POST http://127.0.0.1:8001/api/auth/logout [204 No Content, 95B, 11ms]
+  √  HTTP 204 No Content
+→ 03 · Sin sesión: listar proveedores
+  GET http://127.0.0.1:8001/api/providers [401 Unauthorized, 209B, 13ms]
+  √  HTTP 401
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = no_autenticado
+  √  Sin trazas ni rutas internas
+→ 04 · Login con credenciales incorrectas
+  POST http://127.0.0.1:8001/api/auth/login [401 Unauthorized, 216B, 199ms]
+  √  HTTP 401
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = credenciales_invalidas
+  √  Sin trazas ni rutas internas
+→ 05 · Login correcto
+  POST http://127.0.0.1:8001/api/auth/login [200 OK, 364B, 173ms]
+  √  HTTP 200 OK
+  √  Devuelve usuario y rol
+  √  Nunca devuelve la contraseña
+  √  Se abre la sesión (cookie)
+→ 06 · Crear proveedor
+  POST http://127.0.0.1:8001/api/providers [201 Created, 217B, 29ms]
+  √  HTTP 201 Created
+  √  Devuelve el proveedor creado
+→ 07 · Proveedor duplicado con otra capitalización y espacios
+  POST http://127.0.0.1:8001/api/providers [409 Conflict, 217B, 15ms]
+  √  HTTP 409
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = duplicado
+  √  Sin trazas ni rutas internas
+→ 08 · Proveedor con símbolo no permitido
+  POST http://127.0.0.1:8001/api/providers [422 Unprocessable Content, 295B, 18ms]
+  √  HTTP 422
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = validacion_nombre
+  √  Sin trazas ni rutas internas
+→ 09 · Crear licitación
+  POST http://127.0.0.1:8001/api/tenders [201 Created, 372B, 40ms]
+  √  HTTP 201 Created
+  √  Nace en Borrador con presupuesto 1000000.00
+→ 10 · Publicar licitación
+  POST http://127.0.0.1:8001/api/tenders/2/publish [200 OK, 368B, 28ms]
+  √  HTTP 200 OK
+  √  Estado Publicada
+→ 11 · Oferta válida
+  POST http://127.0.0.1:8001/api/tenders/2/offers [201 Created, 247B, 53ms]
+  √  HTTP 201 Created
+  √  Devuelve la oferta
+→ 12 · Oferta duplicada del mismo proveedor
+  POST http://127.0.0.1:8001/api/tenders/2/offers [409 Conflict, 246B, 32ms]
+  √  HTTP 409
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = oferta_duplicada
+  √  Sin trazas ni rutas internas
+→ 13 · Oferta por encima del presupuesto (+0,01)
+  POST http://127.0.0.1:8001/api/tenders/2/offers [422 Unprocessable Content, 298B, 24ms]
+  √  HTTP 422
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = monto_excede_presupuesto
+  √  Sin trazas ni rutas internas
+→ 14 · Oferta de cero
+  POST http://127.0.0.1:8001/api/tenders/2/offers [422 Unprocessable Content, 243B, 15ms]
+  √  HTTP 422
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = monto_invalido
+  √  Sin trazas ni rutas internas
+→ 15 · Evaluación: mejor oferta
+  GET http://127.0.0.1:8001/api/tenders/2/evaluation [200 OK, 369B, 22ms]
+  √  HTTP 200 OK
+  √  La mejor oferta es la registrada
+  √  Ahorro 10.00 % y clasificación Conveniente
+  √  Aprobador Encargado de área (900000 < 1000000)
+→ 16 · Cerrar licitación
+  POST http://127.0.0.1:8001/api/tenders/2/close [200 OK, 366B, 42ms]
+  √  HTTP 200 OK
+  √  Estado Cerrada
+→ 17 · Transición inválida: reabrir una licitación Cerrada
+  POST http://127.0.0.1:8001/api/tenders/2/publish [409 Conflict, 247B, 19ms]
+  √  HTTP 409
+  √  El cuerpo tiene exactamente {error, detalle}
+  √  error = transicion_invalida
+  √  Sin trazas ni rutas internas
+┌─────────────────────────┬───────────────────┬───────────────────┐
+│                         │          executed │            failed │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│              iterations │                 1 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│                requests │                17 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│            test-scripts │                17 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│      prerequest-scripts │                 2 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│              assertions │                53 │                 0 │
+├─────────────────────────┴───────────────────┴───────────────────┤
+│ total run duration: 2.3s                                        │
+├─────────────────────────────────────────────────────────────────┤
+│ total data received: 1.92kB (approx)                            │
+├─────────────────────────────────────────────────────────────────┤
+│ average response time: 48ms [min: 11ms, max: 199ms, s.d.: 54ms] │
+└─────────────────────────────────────────────────────────────────┘
+(node:31220) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+VERIFICACIONES
+  OK     newman terminó con código 0 (0 = sin fallos)
+  OK     requests ejecutadas: 17 (esperadas: 17)
+  OK     requests fallidas: 0 (esperadas: 0)
+  OK     aserciones ejecutadas: 53, fallidas: 0 (esperadas: 0 fallidas)
+
+RESULTADO OBTENIDO: PASA  (4/4 verificaciones)
