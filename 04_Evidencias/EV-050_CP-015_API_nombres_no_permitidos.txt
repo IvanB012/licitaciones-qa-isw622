@@ -1,4 +1,4 @@
-EV-101 - Seguridad: nombres de proveedor no permitidos por la API
+EV-050 - Seguridad: nombres de proveedor no permitidos por la API
 ==============================================================================
 Casos de prueba : CP-015
 Requisitos      : REQ-012

@@ -112,11 +112,11 @@ def ui_cliente():
 
 resultados = {}
 
-# ---------------------------------------------------------------- EV-101: CP-015 por API
+# ---------------------------------------------------------------- EV-050: CP-015 por API
 ev = Evidencia(
-    "EV-101_CP-015_API_nombres_no_permitidos.txt",
+    "EV-050_CP-015_API_nombres_no_permitidos.txt",
     cabecera(
-        "EV-101", "Seguridad: nombres de proveedor no permitidos por la API", "CP-015", "REQ-012",
+        "EV-050", "Seguridad: nombres de proveedor no permitidos por la API", "CP-015", "REQ-012",
         "Intentar crear proveedores con <script>, & , ; y emoji directamente contra POST /api/providers.",
         "422 validacion_nombre para cada nombre y no se guarda nada; un nombre válido de control sí se acepta.",
     ),
@@ -140,13 +140,13 @@ with api_cliente() as c:
     r = c.post("/api/providers", json={"name": control})
     ev.peticion(f"POST /api/providers  name={control!r}   (control positivo)", r)
     ev.check("el nombre válido de control se acepta con 201 (el validador no rechaza todo)", r.status_code == 201)
-resultados["EV-101"] = ev.cerrar()
+resultados["EV-050"] = ev.cerrar()
 
-# ---------------------------------------------------------------- EV-102: CP-015 por la UI
+# ---------------------------------------------------------------- EV-051: CP-015 por la UI
 ev = Evidencia(
-    "EV-102_CP-015_UI_escape_y_rechazo.txt",
+    "EV-051_CP-015_UI_escape_y_rechazo.txt",
     cabecera(
-        "EV-102", "Seguridad: formulario de la UI rechaza y escapa los nombres no permitidos", "CP-015", "REQ-012",
+        "EV-051", "Seguridad: formulario de la UI rechaza y escapa los nombres no permitidos", "CP-015", "REQ-012",
         "Enviar los 4 nombres por el formulario /providers/new y revisar el HTML devuelto; además, un título de licitación con <script>.",
         "422 con mensaje de error visible; el valor se muestra escapado (sin <script> crudo) y no se guarda; el título con <script> se muestra como texto.",
     ),
@@ -179,13 +179,13 @@ with ui_cliente() as u:
         ev.log(f"> GET {ruta}")
         ev.check(f"{ruta}: no contiene <script>alert(1)</script> crudo", titulo not in html)
         ev.check(f"{ruta}: contiene la versión escapada {escape(titulo)!s}", str(escape(titulo)) in html)
-resultados["EV-102"] = ev.cerrar()
+resultados["EV-051"] = ev.cerrar()
 
-# ---------------------------------------------------------------- EV-103: CP-016
+# ---------------------------------------------------------------- EV-052: CP-016
 ev = Evidencia(
-    "EV-103_CP-016_errores_sin_trazas.txt",
+    "EV-052_CP-016_errores_sin_trazas.txt",
     cabecera(
-        "EV-103", "Seguridad: errores controlados sin trazas, rutas ni credenciales", "CP-016", "REQ-012",
+        "EV-052", "Seguridad: errores controlados sin trazas, rutas ni credenciales", "CP-016", "REQ-012",
         "Provocar errores reales (404, 401, 400, 405, 422) y leer el cuerpo completo de cada respuesta.",
         "Formato {\"error\",\"detalle\"} con el HTTP correcto y ninguna respuesta contiene trazas, nombres .py, rutas ni credenciales.",
     ),
@@ -223,10 +223,10 @@ with api_cliente() as c, httpx.Client(base_url=BASE, timeout=10) as anon, ui_cli
         ev.check(f"UI {ruta} -> sin trazas ni credenciales {fugas if fugas else ''}".strip(), not fugas)
         ev.log("")
 ev.log("NOTA: provocar un error 500 real exige alterar el código de la aplicación. Ese caso (ruta de prueba que lanza una excepción con un texto")
-ev.log("'secreto') se ejecuta en EV-104 con pytest, que es la forma prevista en el diseño del caso CP-016.")
-resultados["EV-103"] = ev.cerrar()
+ev.log("'secreto') se ejecuta en EV-053 con pytest, que es la forma prevista en el diseño del caso CP-016.")
+resultados["EV-052"] = ev.cerrar()
 
-# ---------------------------------------------------------------- EV-104: pytest CP-015/016
+# ---------------------------------------------------------------- EV-053: pytest CP-015/016
 NODOS = [
     "tests/unit/test_provider_rules.py::test_nombre_con_caracteres_no_permitidos_se_rechaza",
     "tests/api/test_providers_api.py::test_nombre_invalido_422",
@@ -240,9 +240,9 @@ NODOS = [
     "tests/api/test_offers_ui.py::test_oferta_inexistente_404_en_ui",
 ]
 ev = Evidencia(
-    "EV-104_CP-015_CP-016_pytest.txt",
+    "EV-053_CP-015_CP-016_pytest.txt",
     cabecera(
-        "EV-104", "Seguridad: pruebas automatizadas de CP-015 y CP-016 (incluye el error 500 forzado)", "CP-015, CP-016", "REQ-012",
+        "EV-053", "Seguridad: pruebas automatizadas de CP-015 y CP-016 (incluye el error 500 forzado)", "CP-015, CP-016", "REQ-012",
         "Ejecutar las pruebas pytest asociadas a CP-015 y CP-016.",
         "Todas pasan (incluido el 500 forzado, que devuelve un mensaje genérico sin traza ni 'secretos').",
         contra_app=False,
@@ -263,7 +263,7 @@ ev.check(
     f"resumen real de pytest: {resumen.strip('= ')!r} (sin pruebas fallidas)",
     bool(pasan) and int(pasan.group(1)) >= len(NODOS) and not fallan,
 )
-resultados["EV-104"] = ev.cerrar()
+resultados["EV-053"] = ev.cerrar()
 
 print("RESUMEN:", {k: ("PASA" if v else "FALLA") for k, v in resultados.items()})
 sys.exit(0 if all(resultados.values()) else 1)

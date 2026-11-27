@@ -1,4 +1,4 @@
-EV-102 - Seguridad: formulario de la UI rechaza y escapa los nombres no permitidos
+EV-051 - Seguridad: formulario de la UI rechaza y escapa los nombres no permitidos
 ==============================================================================
 Casos de prueba : CP-015
 Requisitos      : REQ-012
