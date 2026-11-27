@@ -62,11 +62,24 @@ python scripts/ejecutar_postman.py . http://127.0.0.1:8001 <ruta_al_worktree_del
 
 Archivos de apoyo en `04_Evidencias/perf/`: `perf_20261126_224750_peticiones.csv` (una fila por petición), `perf_20261126_224750_recursos.csv` (CPU y RAM por segundo) y `perf_20261126_224750_resumen.json`. El p95 se recalculó desde el CSV con un método distinto al del script y coincide. Script y cómo ejecutarlo: `scripts/perf/README.md`.
 
+## Usabilidad (REQ-013)
+
+| EV | RUN | CP | Qué muestra | Resultado |
+|---|---|---|---|---|
+| EV-070 | RUN-062 | CP-017 | UX-001: el proveedor "Comercial Pacífico S.A." aparece en el listado tras crearlo | Sí |
+| EV-074 | RUN-062 | CP-017 | UX-002: error real de la app (422) al escribir el monto como `8 500 000,00`: *"Monto inválido: use solo dígitos con punto decimal…"* | Obstáculo |
+| EV-071 | RUN-062 | CP-017 | UX-002: la oferta de ₡8 500 000,00 ya registrada en el detalle de la licitación | Sí (tras corregir solo) |
+| EV-072 | RUN-062 | CP-017 | UX-003: el proveedor "Distribuidora Central (CR)" aparece en el listado | Sí |
+| EV-073 | RUN-062 | CP-017 | UX-004: la oferta de ₡9 200 000,00 ya registrada en el detalle de la licitación | Con ayuda |
+
+Resultado: **3 de 4 tareas sin ayuda** (cumple REQ-013 en el límite). Detalle y propuestas de mejora en `usabilidad_ian.md`.
+
 ## Registros de trabajo (para pegar en el Excel)
 
-- `registro_ian.md`: RUN-050 a RUN-061 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010 y CP-018), columnas de la hoja 06.
+- `registro_ian.md`: RUN-050 a RUN-062 (CP-015, CP-016, CP-003, CP-002, CP-019, CP-004, CP-005, CP-006, CP-008, CP-009, CP-010, CP-018 y CP-017 simulada), columnas de la hoja 06.
 - `seguridad_ian.md`: SEC-001 y SEC-002, columnas de la hoja 13.
 - `rendimiento_ian.md`: PERF-001, columnas de la hoja 15.
+- `usabilidad_ian.md`: UX-001 a UX-004 (**simulada**), columnas de la hoja 14.
 
 > **Renumeración:** estas evidencias se crearon como EV-101 a EV-104 y el registro de IA como IA-054. Se renombraron a EV-050 a EV-053 e IA-056 para respetar los rangos de IDs de Ian. Solo cambia el identificador: el contenido es el de la ejecución del 26-nov-2026 a las 21:50.
 
@@ -84,4 +97,4 @@ python scripts/ejecutar_seguridad.py . http://127.0.0.1:8001
 
 Los veredictos los calcula el script a partir de las respuestas reales. Para repetir la ejecución hay que resetear la BD antes (el caso crea un proveedor y una licitación de control). EV-054 se obtiene con `git diff qa-build-1 <commit> --stat -- app seeds requirements.txt` (debe salir vacío) y EV-055 es una captura manual de la UI.
 
-> Los archivos EV-050 a EV-068, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`) y EV-059 a EV-064 (ver `05_IA/IA-058.md`). La revisión humana de esos registros consta en los campos de revisión de cada `IA-###`.
+> Los archivos EV-050 a EV-074, la colección de Postman y los scripts los generó una herramienta de IA: EV-067 y EV-068 y la colección (ver `05_IA/IA-054.md`), EV-069, el script de carga y `rendimiento_ian.md` (ver `05_IA/IA-055.md`), EV-050 a EV-055, EV-065 y EV-066 (ver `05_IA/IA-056.md`), EV-056 a EV-058 (ver `05_IA/IA-057.md`), EV-059 a EV-064 (ver `05_IA/IA-058.md`) y EV-070 a EV-074 con `usabilidad_ian.md` (ver `05_IA/IA-059.md`). La revisión humana consta en los campos de revisión de cada `IA-###` (IA-050 a IA-058); la de `IA-059` está pendiente.
