@@ -1,0 +1,35 @@
+EV-060 - CP-005: Ahorro y clasificación en el escenario aislado
+==============================================================================
+Caso de prueba  : CP-005
+Requisito       : REQ-008
+Ejecución       : RUN-056
+Fecha/hora      : 2026-11-26 22:24:54 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.14.6 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: presupuesto CRC 1 000 000,00; ofertas 900000.00, 950000.00 y 1000000.00.
+RESULTADO ESPERADO (de las reglas, no del código): 900 000 -> 10 % Conveniente; 950 000 -> 5 % Aceptable; 1 000 000 -> 0 % Válida sin ahorro. (REQ-008: >= 10 % Conveniente; > 0 y < 10 % Aceptable; 0 % Válida sin ahorro)
+
+Comando: python -m pytest -v tests/unit/test_evaluation_rules.py::test_escenario_aislado_10_5_y_0_por_ciento tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento
+
+============================= test session starts =============================
+collecting ... collected 9 items
+tests/unit/test_evaluation_rules.py::test_escenario_aislado_10_5_y_0_por_ciento[90000000-10.00-Conveniente] PASSED [ 11%]
+tests/unit/test_evaluation_rules.py::test_escenario_aislado_10_5_y_0_por_ciento[95000000-5.00-Aceptable] PASSED [ 22%]
+tests/unit/test_evaluation_rules.py::test_escenario_aislado_10_5_y_0_por_ciento[100000000-0.00-V\xe1lida sin ahorro] PASSED [ 33%]
+tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento[90000000-Conveniente] PASSED [ 44%]
+tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento[90000001-Aceptable] PASSED [ 55%]
+tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento[90100000-Aceptable] PASSED [ 66%]
+tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento[89999999-Conveniente] PASSED [ 77%]
+tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento[99999999-Aceptable] PASSED [ 88%]
+tests/unit/test_evaluation_rules.py::test_clasificacion_en_la_frontera_del_diez_por_ciento[1-Conveniente] PASSED [100%]
+============================== 9 passed in 0.35s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_escenario_aislado_10_5_y_0_por_ciento: PASSED en tests/unit/test_evaluation_rules.py
+  OK     test_clasificacion_en_la_frontera_del_diez_por_ciento: PASSED en tests/unit/test_evaluation_rules.py
+  OK     resumen real de pytest: '9 passed in 0.35s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (4/4 verificaciones; 9 pruebas pasadas)

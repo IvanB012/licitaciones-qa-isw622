@@ -1,0 +1,37 @@
+EV-059 - CP-004: Transiciones de estado de la licitación
+==============================================================================
+Caso de prueba  : CP-004
+Requisito       : REQ-003
+Ejecución       : RUN-055
+Fecha/hora      : 2026-11-26 22:24:39 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.14.6 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: Borrador->Publicada y Publicada->Cerrada (válidas); Cerrada->Publicada y Publicada->Borrador (inválidas). También Borrador->Cerrada (válida).
+RESULTADO ESPERADO (de las reglas, no del código): Borrador->Publicada, Borrador->Cerrada y Publicada->Cerrada se permiten; Cerrada->Publicada y Publicada->Borrador se rechazan con 409 transicion_invalida. (REQ-003)
+
+Comando: python -m pytest -v tests/unit/test_tender_rules.py::test_transiciones_validas tests/unit/test_tender_rules.py::test_transiciones_invalidas tests/api/test_tenders_api.py::test_no_se_reabre_una_cerrada_409
+
+============================= test session starts =============================
+collecting ... collected 10 items
+tests/unit/test_tender_rules.py::test_transiciones_validas[Borrador-Publicada] PASSED [ 10%]
+tests/unit/test_tender_rules.py::test_transiciones_validas[Borrador-Cerrada] PASSED [ 20%]
+tests/unit/test_tender_rules.py::test_transiciones_validas[Publicada-Cerrada] PASSED [ 30%]
+tests/unit/test_tender_rules.py::test_transiciones_invalidas[Borrador-Borrador] PASSED [ 40%]
+tests/unit/test_tender_rules.py::test_transiciones_invalidas[Publicada-Borrador] PASSED [ 50%]
+tests/unit/test_tender_rules.py::test_transiciones_invalidas[Publicada-Publicada] PASSED [ 60%]
+tests/unit/test_tender_rules.py::test_transiciones_invalidas[Cerrada-Borrador] PASSED [ 70%]
+tests/unit/test_tender_rules.py::test_transiciones_invalidas[Cerrada-Publicada] PASSED [ 80%]
+tests/unit/test_tender_rules.py::test_transiciones_invalidas[Cerrada-Cerrada] PASSED [ 90%]
+tests/api/test_tenders_api.py::test_no_se_reabre_una_cerrada_409 PASSED  [100%]
+============================= 10 passed in 1.68s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_transiciones_validas: PASSED en tests/unit/test_tender_rules.py
+  OK     test_transiciones_invalidas: PASSED en tests/unit/test_tender_rules.py
+  OK     test_no_se_reabre_una_cerrada_409: PASSED en tests/api/test_tenders_api.py
+  OK     resumen real de pytest: '10 passed in 1.68s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (5/5 verificaciones; 10 pruebas pasadas)

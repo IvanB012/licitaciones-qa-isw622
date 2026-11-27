@@ -1,0 +1,33 @@
+EV-062 - CP-008: Segunda oferta del mismo proveedor en la misma licitación
+==============================================================================
+Caso de prueba  : CP-008
+Requisito       : REQ-006
+Ejecución       : RUN-058
+Fecha/hora      : 2026-11-26 22:25:21 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.14.6 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: POST /api/tenders/{L1}/offers con provider_id = P1 (que ya ofertó en L1) y monto 8000000.00; repetido saltándose el chequeo del service.
+RESULTADO ESPERADO (de las reglas, no del código): HTTP 409 {"error": "oferta_duplicada", "detalle": ...}; la oferta original no cambia; la restricción UNIQUE (licitación, proveedor) de la BD también la rechaza. (REQ-006)
+NOTA: El último test no figura en la ficha del catálogo. Se agregó porque el resultado esperado exige que la oferta original no cambie y los tres tests listados no lo comprueban.
+
+Comando: python -m pytest -v tests/api/test_offers_api.py::test_proveedor_no_puede_ofertar_dos_veces tests/api/test_offers_api.py::test_la_bd_tambien_rechaza_el_duplicado tests/unit/test_models.py::test_oferta_unica_por_proveedor_y_licitacion tests/api/test_offers_api.py::test_el_duplicado_no_altera_la_oferta_original
+
+============================= test session starts =============================
+collecting ... collected 4 items
+tests/api/test_offers_api.py::test_proveedor_no_puede_ofertar_dos_veces PASSED [ 25%]
+tests/api/test_offers_api.py::test_la_bd_tambien_rechaza_el_duplicado PASSED [ 50%]
+tests/unit/test_models.py::test_oferta_unica_por_proveedor_y_licitacion PASSED [ 75%]
+tests/api/test_offers_api.py::test_el_duplicado_no_altera_la_oferta_original PASSED [100%]
+============================== 4 passed in 3.50s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_proveedor_no_puede_ofertar_dos_veces: PASSED en tests/api/test_offers_api.py
+  OK     test_la_bd_tambien_rechaza_el_duplicado: PASSED en tests/api/test_offers_api.py
+  OK     test_oferta_unica_por_proveedor_y_licitacion: PASSED en tests/unit/test_models.py
+  OK     test_el_duplicado_no_altera_la_oferta_original: PASSED en tests/api/test_offers_api.py
+  OK     resumen real de pytest: '4 passed in 3.50s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (6/6 verificaciones; 4 pruebas pasadas)
