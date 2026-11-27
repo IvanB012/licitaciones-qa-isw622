@@ -1,6 +1,6 @@
 """Ejecuta CP automáticos con pytest sobre el commit actual y escribe la evidencia en 04_Evidencias/.
 
-Uso:  python ejecutar_cp.py <repo> <salida_json> [CP-### ...]   (sin ids ejecuta todos; volver a ejecutar un CP sobrescribe su evidencia)
+Uso:  python ejecutar_cp.py <repo> <salida_json> [CP-### | SUITE ...]   (sin ids ejecuta todos; volver a ejecutar un CP sobrescribe su evidencia)
 Los veredictos salen de la salida real de pytest: código de retorno, cada test pedido en PASSED y ninguno en FAILED.
 """
 import datetime
@@ -112,6 +112,76 @@ CASOS = [
         "esperado": "Mejor oferta = P1 (9 000 000,00). En el empate gana la registrada primero. (REQ-007)",
         "nodos": [f"{EA}::test_datos_base_l1", f"{EA}::test_empate_gana_la_registrada_primero", f"{ER}::test_empate_gana_la_registrada_primero"],
     },
+    # ---- Casos de Iván (RUN-001 a RUN-049 / EV-001 a EV-049). Ejecutar con ids: SUITE CP-001 CP-007 CP-013 CP-014 CP-020 ----
+    {
+        "run": "RUN-001", "ev": "EV-001", "cp": "SUITE", "req": "REQ-001 a REQ-012 (todos los automáticos)", "archivo": "EV-001_pytest_suite_qa-build-1.txt",
+        "titulo": "Suite completa de pytest sobre el build qa-build-1",
+        "entradas": "pytest -v sobre todo el directorio tests/ (sin ids de prueba), con una BD SQLite temporal por prueba y sin acceso a la red.",
+        "esperado": "Todas las pruebas pasan: 928 passed, 0 failed, 0 errors. (CLAUDE.md: commitear solo con pytest en verde; resultado esperado de cada prueba = reglas REQ)",
+        "nodos": [],
+        "esperado_passed": 928,
+    },
+    {
+        "run": "RUN-002", "ev": "EV-002", "cp": "CP-001", "req": "REQ-001", "archivo": "EV-002_CP-001_proveedor_duplicado_equivalente.txt",
+        "titulo": "Nombre de proveedor equivalente a P1 se rechaza como duplicado",
+        "entradas": "P1 \"Tecnología Norte S.A.\" (seed); nombre \"  tecnología   NORTE s.a. \" (espacios laterales, espacios internos repetidos, otras mayúsculas).",
+        "esperado": "Ambos nombres producen la misma clave y el alta se rechaza como duplicado (409 duplicado); no se crea un segundo proveedor (la BD también lo impide con UNIQUE). (REQ-001)",
+        "nodos": [
+            "tests/unit/test_provider_rules.py::test_nombres_equivalentes_tienen_la_misma_clave",
+            "tests/api/test_providers_api.py::test_nombre_duplicado_equivalente_409",
+            f"{M}::test_name_key_unica",
+        ],
+        "nota": "Ejecuta los 3 tests de la ficha, sin añadidos. Límite: ningún test cuenta los proveedores tras el rechazo; \"no se crea un segundo proveedor\" se sustenta en el 409 de la API y en el rechazo UNIQUE de la BD (test_name_key_unica).",
+    },
+    {
+        "run": "RUN-003", "ev": "EV-003", "cp": "CP-007", "req": "REQ-010", "archivo": "EV-003_CP-007_conversion_usd_y_tasas_invalidas.txt",
+        "titulo": "Conversión CRC -> USD y tasas inválidas",
+        "entradas": "9000000.00 CRC con tasa 500.00 (válido); tasa 0 y tasas negativas (inválidas).",
+        "esperado": "USD 18000.00; las tasas 0 y negativas se rechazan con 422 tasa_invalida. (REQ-010: USD = CRC / (CRC por USD) con tasa > 0)",
+        "nodos": [
+            "tests/unit/test_money.py::test_crc_a_usd_ejemplo_del_seed",
+            "tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva",
+            "tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422",
+        ],
+        "nota": "Ejecuta los 3 tests de la ficha, sin añadidos.",
+    },
+    {
+        "run": "RUN-004", "ev": "EV-004", "cp": "CP-013", "req": "REQ-010", "archivo": "EV-004_CP-013_vista_usd_sin_modificar_bd.txt",
+        "titulo": "Alternar a USD muestra P1 = USD 18 000,00 con tasa y fecha; la BD no cambia",
+        "entradas": "Detalle de LIC-2026-001 (seed: tasa CRC 500,00 por USD con fecha actual) en vista CRC y en vista USD; importes CRC de la BD antes y después.",
+        "esperado": "La oferta de P1 se muestra como USD 18 000,00 con la tasa (500,00) y su fecha visibles; los importes CRC guardados quedan idénticos. (REQ-010: alternar la vista no modifica la BD)",
+        "nodos": [
+            "tests/api/test_evaluation_ui.py::test_vista_usd_muestra_monto_tasa_y_fecha",
+            "tests/api/test_evaluation_ui.py::test_la_vista_de_evaluacion_no_modifica_la_bd",
+            f"{EA}::test_alternar_moneda_no_modifica_la_bd",
+        ],
+        "nota": "Ejecuta los 3 tests de la ficha, sin añadidos. Es UI renderizada en servidor con TestClient (sin navegador); la versión E2E sigue pendiente.",
+    },
+    {
+        "run": "RUN-005", "ev": "EV-005", "cp": "CP-014", "req": "REQ-003, REQ-004, REQ-007", "archivo": "EV-005_CP-014_borrador_cerrada_y_sin_ofertas.txt",
+        "titulo": "Ofertas en Borrador/Cerrada rechazadas; sin ofertas se muestra \"Sin ofertas válidas\"",
+        "entradas": "Oferta con monto válido sobre una licitación en Borrador y sobre una Cerrada; detalle de una licitación sin ofertas.",
+        "esperado": "Ambas ofertas se rechazan (solo se aceptan ofertas en licitaciones Publicadas) con 409 licitacion_no_publicada y no se guardan; el detalle sin ofertas muestra \"Sin ofertas válidas\". (REQ-003, REQ-004, REQ-007)",
+        "nodos": [
+            f"{A}::test_licitacion_en_borrador_no_acepta_ofertas",
+            f"{A}::test_licitacion_cerrada_no_acepta_ofertas",
+            "tests/api/test_offers_ui.py::test_licitacion_cerrada_no_acepta_ofertas_por_ui",
+            "tests/api/test_evaluation_ui.py::test_sin_ofertas_muestra_sin_ofertas_validas",
+        ],
+        "nota": "Ejecuta los 4 tests de la ficha, sin añadidos. Límite: \"no se guardan\" solo se comprueba con conteo para la licitación Cerrada por UI (test_licitacion_cerrada_no_acepta_ofertas_por_ui); para Borrador solo se comprueba el 409. Es UI/API sin navegador; la versión E2E sigue pendiente.",
+    },
+    {
+        "run": "RUN-006", "ev": "EV-006", "cp": "CP-020", "req": "REQ-011", "archivo": "EV-006_CP-020_persistencia_al_reiniciar.txt",
+        "titulo": "Persistencia tras reiniciar la app",
+        "entradas": "Licitación creada y publicada, oferta registrada y evaluación de L1; la aplicación se vuelve a crear (motor nuevo) sobre la misma BD en archivo y se consultan los registros.",
+        "esperado": "La licitación, la oferta y la evaluación siguen presentes con los mismos datos tras reiniciar. (REQ-011: los datos persisten al reiniciar)",
+        "nodos": [
+            f"{TA}::test_los_datos_persisten_al_reiniciar_la_app",
+            "tests/api/test_offers_api.py::test_las_ofertas_persisten_al_reiniciar_la_app",
+            f"{EA}::test_la_evaluacion_persiste_al_reiniciar_la_app",
+        ],
+        "nota": "Ejecuta los 3 tests de la ficha, sin añadidos. BRECHA CONOCIDA: ningún test crea un proveedor nuevo y lo vuelve a leer tras reiniciar (el proveedor solo se comprueba de forma indirecta, como parte de la oferta). Se cierra con el E2E o con una verificación manual.",
+    },
 ]
 
 
@@ -153,7 +223,7 @@ for caso in CASOS:
         f"RESULTADO ESPERADO (de las reglas, no del código): {caso['esperado']}",
         *([f"NOTA: {caso['nota']}"] if caso.get("nota") else []),
         "",
-        "Comando: python -m pytest -v " + " ".join(caso["nodos"]),
+        ("Comando: python -m pytest -v " + " ".join(caso["nodos"])).strip(),
         "",
         *salida,
         "",
@@ -168,6 +238,9 @@ for caso in CASOS:
     resumen_py = next((ln for ln in reversed(salida) if " passed" in ln or " failed" in ln or " error" in ln), "")
     fallan = re.search(r"(\d+) (failed|error)", resumen_py)
     checks.append((f"resumen real de pytest: {resumen_py.strip('= ')!r} (sin fallos ni errores)", not fallan and "passed" in resumen_py))
+    if caso.get("esperado_passed"):  # suite completa: el número de pruebas pasadas debe ser el esperado
+        m_pas = re.search(r"(\d+) passed", resumen_py)
+        checks.append((f"{caso['esperado_passed']} pruebas pasadas (resultado esperado)", bool(m_pas) and int(m_pas.group(1)) == caso["esperado_passed"]))
     for desc, ok in checks:
         lineas.append(f"  {'OK   ' if ok else 'FALLA'}  {desc}")
     todo = all(ok for _, ok in checks)
