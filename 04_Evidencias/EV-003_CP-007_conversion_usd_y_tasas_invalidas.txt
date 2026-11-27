@@ -1,0 +1,51 @@
+EV-003 - CP-007: Conversión CRC -> USD y tasas inválidas
+==============================================================================
+Caso de prueba  : CP-007
+Requisito       : REQ-010
+Ejecución       : RUN-003
+Fecha/hora      : 2026-11-27 10:26:31 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.15.2 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: 9000000.00 CRC con tasa 500.00 (válido); tasa 0 y tasas negativas (inválidas).
+RESULTADO ESPERADO (de las reglas, no del código): USD 18000.00; las tasas 0 y negativas se rechazan con 422 tasa_invalida. (REQ-010: USD = CRC / (CRC por USD) con tasa > 0)
+NOTA: Ejecuta los 3 tests de la ficha, sin añadidos.
+
+Comando: python -m pytest -v tests/unit/test_money.py::test_crc_a_usd_ejemplo_del_seed tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422
+
+============================= test session starts =============================
+collecting ... collected 23 items
+tests/unit/test_money.py::test_crc_a_usd_ejemplo_del_seed PASSED         [  4%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[rate0] PASSED [  8%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[rate1] PASSED [ 13%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[0] PASSED   [ 17%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[rate3] PASSED [ 21%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[rate4] PASSED [ 26%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[500.0] PASSED [ 30%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[None] PASSED [ 34%]
+tests/unit/test_money.py::test_crc_a_usd_exige_tasa_positiva[500] PASSED [ 39%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[0] PASSED [ 43%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[0.00] PASSED [ 47%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[-1] PASSED [ 52%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[-500.00] PASSED [ 56%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[abc] PASSED [ 60%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[] PASSED  [ 65%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[  ] PASSED [ 69%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[5e2] PASSED [ 73%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[500,00] PASSED [ 78%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[500.12345] PASSED [ 82%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[1.2.3] PASSED [ 86%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[None] PASSED [ 91%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[500] PASSED [ 95%]
+tests/unit/test_exchange_rate_rules.py::test_tasa_invalida_422[500.0] PASSED [100%]
+============================= 23 passed in 0.15s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_crc_a_usd_ejemplo_del_seed: PASSED en tests/unit/test_money.py
+  OK     test_crc_a_usd_exige_tasa_positiva: PASSED en tests/unit/test_money.py
+  OK     test_tasa_invalida_422: PASSED en tests/unit/test_exchange_rate_rules.py
+  OK     resumen real de pytest: '23 passed in 0.15s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (5/5 verificaciones; 23 pruebas pasadas)
