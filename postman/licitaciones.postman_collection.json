@@ -1,0 +1,864 @@
+{
+  "info": {
+    "_postman_id": "6a466c01-cd5a-50ce-9838-c9c76e79f892",
+    "name": "Sistema de Gestión de Licitaciones (ISW-622)",
+    "description": "Pruebas de la API HTTP del sistema (éxitos y escenarios negativos). Ejecutar sobre un seed limpio (`python -m seeds.seed --reset`). Cada petición verifica el código HTTP y el cuerpo; los errores deben tener exactamente `{error, detalle}`. Datos sintéticos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "id": "6d4f9702-baf7-5059-b47e-2635b818f318",
+      "name": "01 · Health: la API responde",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "675cb9a0-49bb-51cc-a76f-e38b1a0a8e8a",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 OK\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"status = ok\", function () { pm.expect(pm.response.json()).to.eql({ status: \"ok\" }); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        },
+        "description": "Sin autenticación. REQ-011."
+      },
+      "response": []
+    },
+    {
+      "id": "ed74b95e-2aa6-5fdd-9a71-a7b18ce6ab51",
+      "name": "02 · Limpiar sesión previa",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "7c7031c1-07fd-5b2a-84cd-ebd335819c9b",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204 No Content\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "logout"
+          ]
+        },
+        "description": "Deja el cookie jar sin sesión para que la colección se pueda correr varias veces en la app de Postman."
+      },
+      "response": []
+    },
+    {
+      "id": "cc401479-ff53-5da7-8bc6-e7e2cb9bf2ae",
+      "name": "03 · Sin sesión: listar proveedores",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "ad156eb5-2d90-50d6-810f-54ebf02f81a5",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = no_autenticado\", function () { pm.expect(cuerpo.error).to.eql(\"no_autenticado\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/providers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "providers"
+          ]
+        },
+        "description": "REQ-011: sin sesión la API responde 401."
+      },
+      "response": []
+    },
+    {
+      "id": "1d928fab-1ecf-5fd4-82e6-52667507b7ee",
+      "name": "04 · Login con credenciales incorrectas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "75d57c08-f42d-5734-87c9-c080779bc95d",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = credenciales_invalidas\", function () { pm.expect(cuerpo.error).to.eql(\"credenciales_invalidas\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{username}}\", \"password\": \"clave-incorrecta-123\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "id": "46d116db-f32f-563c-bf0b-c8d0e5b62ff5",
+      "name": "05 · Login correcto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "c74ca581-6af0-5dfd-b2f6-5b79e10638e5",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 OK\", function () { pm.response.to.have.status(200); });",
+              "const u = pm.response.json();",
+              "pm.test(\"Devuelve usuario y rol\", function () { pm.expect(u.username).to.eql(pm.environment.get(\"username\")); pm.expect(u.role).to.be.a(\"string\"); });",
+              "pm.test(\"Nunca devuelve la contraseña\", function () { pm.expect(pm.response.text().toLowerCase()).to.not.include(\"password\"); });",
+              "pm.test(\"Se abre la sesión (cookie)\", function () { pm.expect(pm.cookies.has(\"session\")).to.be.true; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "id": "24587f9f-f764-5bac-8829-251c0b932bf2",
+      "name": "06 · Crear proveedor",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "6f73ff58-17f1-5ac4-a7db-0601fca4b771",
+            "type": "text/javascript",
+            "exec": [
+              "// Nombre único por ejecución (letras, números y espacios) para poder repetir la colección",
+              "const suf = Date.now().toString() + Math.floor(Math.random() * 1000);",
+              "const nombre = \"Postman Proveedor \" + suf;",
+              "pm.collectionVariables.set(\"provider_name\", nombre);",
+              "// Mismo nombre con otra capitalización y espacios de más (para el caso del duplicado)",
+              "pm.collectionVariables.set(\"provider_name_dup\", \"  \" + nombre.toUpperCase().replace(/ /g, \"   \") + \"  \");",
+              "pm.collectionVariables.set(\"suffix\", suf);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "e2425612-ffb4-583f-a308-8033616e21e3",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201 Created\", function () { pm.response.to.have.status(201); });",
+              "const p = pm.response.json();",
+              "pm.test(\"Devuelve el proveedor creado\", function () { pm.expect(p.name).to.eql(pm.collectionVariables.get(\"provider_name\")); pm.expect(p.id).to.be.a(\"number\"); });",
+              "pm.collectionVariables.set(\"provider_id\", p.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/providers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "providers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"{{provider_name}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-001."
+      },
+      "response": []
+    },
+    {
+      "id": "e572c274-3b55-59f6-b2a1-5e62f63bc891",
+      "name": "07 · Proveedor duplicado con otra capitalización y espacios",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "c46502e2-6d92-55e9-b46c-81aaaded441d",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = duplicado\", function () { pm.expect(cuerpo.error).to.eql(\"duplicado\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/providers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "providers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"{{provider_name_dup}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-001: nombres equivalentes tras recortar, compactar espacios y no distinguir mayúsculas se rechazan."
+      },
+      "response": []
+    },
+    {
+      "id": "a6f6ea8c-3ce9-5480-bb41-ea4032bd38a9",
+      "name": "08 · Proveedor con símbolo no permitido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "536cdc90-e5c0-55cd-9471-ccf4e15519c7",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", function () { pm.response.to.have.status(422); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = validacion_nombre\", function () { pm.expect(cuerpo.error).to.eql(\"validacion_nombre\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/providers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "providers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Acme & Co\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-012: solo letras, números, espacios, punto, coma y paréntesis."
+      },
+      "response": []
+    },
+    {
+      "id": "1017d7a7-81b7-57ca-94b5-f3367a4922fd",
+      "name": "09 · Crear licitación",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "abb81ad7-4ebb-5e8d-89b8-181a44036ffc",
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"tender_code\", \"LIC-PM-\" + pm.collectionVariables.get(\"suffix\"));",
+              "// Cierre dentro de 2 días (siempre futuro)",
+              "pm.collectionVariables.set(\"closes_at\", new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "41029f15-5c0f-5b77-a873-36799697ce4a",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201 Created\", function () { pm.response.to.have.status(201); });",
+              "const t = pm.response.json();",
+              "pm.test(\"Nace en Borrador con presupuesto 1000000.00\", function () { pm.expect(t.status).to.eql(\"Borrador\"); pm.expect(t.budget).to.eql(\"1000000.00\"); });",
+              "pm.collectionVariables.set(\"tender_id\", t.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/tenders",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"code\": \"{{tender_code}}\", \"title\": \"Licitación de prueba Postman\", \"budget\": \"1000000.00\", \"closes_at\": \"{{closes_at}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-002."
+      },
+      "response": []
+    },
+    {
+      "id": "7082df39-3222-502a-b917-24e054bd4965",
+      "name": "10 · Publicar licitación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "8baa5317-051f-5e87-8a6e-f88c612e877c",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 OK\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Estado Publicada\", function () { pm.expect(pm.response.json().status).to.eql(\"Publicada\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "publish"
+          ]
+        },
+        "description": "REQ-003: Borrador → Publicada."
+      },
+      "response": []
+    },
+    {
+      "id": "f051c47c-3dba-563f-bfe0-bc86e22e7cb2",
+      "name": "11 · Oferta válida",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "fd3281df-56f0-5dbf-8f3c-62a887398ed9",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201 Created\", function () { pm.response.to.have.status(201); });",
+              "const o = pm.response.json();",
+              "pm.test(\"Devuelve la oferta\", function () { pm.expect(o.amount).to.eql(\"900000.00\"); pm.expect(o.provider_id).to.eql(Number(pm.collectionVariables.get(\"provider_id\"))); });",
+              "pm.collectionVariables.set(\"offer_id\", o.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/offers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "offers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"provider_id\": {{provider_id}}, \"amount\": \"900000.00\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-005."
+      },
+      "response": []
+    },
+    {
+      "id": "6871b015-b852-572d-b4ed-087ab01684dc",
+      "name": "12 · Oferta duplicada del mismo proveedor",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "6e62d6fc-c1c1-5164-9175-e04cd1cfea30",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = oferta_duplicada\", function () { pm.expect(cuerpo.error).to.eql(\"oferta_duplicada\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/offers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "offers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"provider_id\": {{provider_id}}, \"amount\": \"800000.00\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-006: una oferta por proveedor y licitación."
+      },
+      "response": []
+    },
+    {
+      "id": "d365b331-4a9e-5764-871f-f95ac29df03c",
+      "name": "13 · Oferta por encima del presupuesto (+0,01)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "0dc4e901-d999-51d1-80f0-9f237fc40263",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", function () { pm.response.to.have.status(422); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = monto_excede_presupuesto\", function () { pm.expect(cuerpo.error).to.eql(\"monto_excede_presupuesto\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/offers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "offers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"provider_id\": {{provider_id}}, \"amount\": \"1000000.01\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-005: un céntimo por encima del presupuesto se rechaza."
+      },
+      "response": []
+    },
+    {
+      "id": "771106a9-21b4-5ac9-a2ac-bce0719633ad",
+      "name": "14 · Oferta de cero",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "d5c40b02-737d-56af-8baa-cecb4957aa54",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", function () { pm.response.to.have.status(422); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = monto_invalido\", function () { pm.expect(cuerpo.error).to.eql(\"monto_invalido\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/offers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "offers"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"provider_id\": {{provider_id}}, \"amount\": \"0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "REQ-005: cero y negativos se rechazan."
+      },
+      "response": []
+    },
+    {
+      "id": "7ab19495-ec36-58cc-a339-28186b188cfc",
+      "name": "15 · Evaluación: mejor oferta",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "0f275c4c-4ef5-5c8c-83fd-9f5d46bce9a3",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 OK\", function () { pm.response.to.have.status(200); });",
+              "const e = pm.response.json();",
+              "pm.test(\"La mejor oferta es la registrada\", function () { pm.expect(e.best_offer.offer_id).to.eql(Number(pm.collectionVariables.get(\"offer_id\"))); pm.expect(e.best_offer.amount).to.eql(\"900000.00\"); });",
+              "pm.test(\"Ahorro 10.00 % y clasificación Conveniente\", function () { pm.expect(e.savings_pct).to.eql(\"10.00\"); pm.expect(e.classification).to.eql(\"Conveniente\"); });",
+              "pm.test(\"Aprobador Encargado de área (900000 < 1000000)\", function () { pm.expect(e.approver).to.eql(\"Encargado de área\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/evaluation",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "evaluation"
+          ]
+        },
+        "description": "REQ-007, REQ-008 y REQ-009. Requiere los rangos de aprobación del seed."
+      },
+      "response": []
+    },
+    {
+      "id": "d654e199-b10c-5331-a71e-6fbd53fa002e",
+      "name": "16 · Cerrar licitación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "7ee41ec8-79a9-5be4-ab93-9964a3132a32",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 OK\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Estado Cerrada\", function () { pm.expect(pm.response.json().status).to.eql(\"Cerrada\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/close",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "close"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "id": "6595cbf8-9831-5656-9005-ead538feb695",
+      "name": "17 · Transición inválida: reabrir una licitación Cerrada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "5cf5e5ac-8b8f-5c02-9608-d22f2c1a7cfa",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+              "const cuerpo = pm.response.json();",
+              "pm.test(\"El cuerpo tiene exactamente {error, detalle}\", function () {",
+              "  pm.expect(Object.keys(cuerpo).sort()).to.eql([\"detalle\", \"error\"]);",
+              "});",
+              "pm.test(\"error = transicion_invalida\", function () { pm.expect(cuerpo.error).to.eql(\"transicion_invalida\"); });",
+              "pm.test(\"Sin trazas ni rutas internas\", function () {",
+              "  const t = pm.response.text();",
+              "  pm.expect(t).to.not.include(\"Traceback\"); pm.expect(t).to.not.include(\".py\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tenders/{{tender_id}}/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tenders",
+            "{{tender_id}}",
+            "publish"
+          ]
+        },
+        "description": "REQ-003: no se reabre una licitación Cerrada."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "suffix",
+      "value": ""
+    },
+    {
+      "key": "provider_name",
+      "value": ""
+    },
+    {
+      "key": "provider_name_dup",
+      "value": ""
+    },
+    {
+      "key": "provider_id",
+      "value": ""
+    },
+    {
+      "key": "tender_code",
+      "value": ""
+    },
+    {
+      "key": "closes_at",
+      "value": ""
+    },
+    {
+      "key": "tender_id",
+      "value": ""
+    },
+    {
+      "key": "offer_id",
+      "value": ""
+    }
+  ]
+}
