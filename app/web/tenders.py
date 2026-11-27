@@ -13,10 +13,11 @@ from app.rules.constants import STATUS_BORRADOR, TENDER_STATUSES
 from app.rules.money import format_money
 from app.rules.tenders import is_expired
 from app.rules.timeutil import from_cr, to_cr
+from app.services import evaluation as evaluation_service
 from app.services import offers as offers_service
 from app.services import tenders as service
 from app.services.currency import current_rate
-from app.web.templating import flash, render
+from app.web.templating import flash, get_currency, render
 
 router = APIRouter(include_in_schema=False, dependencies=[Depends(require_user)])
 
@@ -104,6 +105,7 @@ def render_tender_detail(
     """Detalle de la licitación con su sección de ofertas (la reutiliza web/offers.py para mostrar errores)."""
     ctx = {
         "tender": tender,
+        "evaluation": evaluation_service.evaluate(db, clock, tender.id, get_currency(request), strict=False),
         "offers": offers_service.list_offers(db, tender.id),
         "providers": offers_service.list_provider_options(db),
         "offer_form": offer_form or {"provider_id": "", "amount": ""},
