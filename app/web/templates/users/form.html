@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "macros.html" import form_error %}
+{% set editing = user_obj is not none %}
+{% block title %}{{ 'Editar usuario' if editing else 'Nuevo usuario' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h3 fw-bold mb-3">{{ 'Editar usuario' if editing else 'Nuevo usuario' }}</h1>
+    <div class="card app-card">
+      <div class="card-body p-4">
+        {{ form_error(error) }}
+        <form method="post" action="{{ '/users/%d/edit' % user_obj.id if editing else '/users/new' }}" novalidate data-testid="user-form" autocomplete="off">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="username" class="form-label">Usuario</label>
+              {% if editing %}
+                <input type="text" class="form-control" id="username" value="{{ form.username }}" readonly data-testid="user-username-input">
+              {% else %}
+                <input type="text" class="form-control" id="username" name="username" value="{{ form.username }}" required data-testid="user-username-input">
+                <div class="form-text">De 3 a 50 caracteres: letras, números, punto, guion o guion bajo.</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="role" class="form-label">Rol</label>
+              <select class="form-select" id="role" name="role" data-testid="user-role-input">
+                {% for r in roles %}<option value="{{ r }}"{{ ' selected' if form.role == r }}>{{ r }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="password" class="form-label">Contraseña{% if editing %} <span class="text-muted small">(dejar vacío para no cambiarla)</span>{% endif %}</label>
+              <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" {{ '' if editing else 'required' }} data-testid="user-password-input">
+              <div class="form-text">De 8 a 128 caracteres.</div>
+            </div>
+            {% if editing %}
+            <div class="col-md-6 d-flex align-items-center">
+              <div class="form-check mt-3">
+                <input type="checkbox" class="form-check-input" id="active" name="active"{{ ' checked' if form.active }} data-testid="user-active-input">
+                <label for="active" class="form-check-label">Usuario activo</label>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-testid="user-submit">{{ 'Guardar cambios' if editing else 'Crear usuario' }}</button>
+            <a href="/users" class="btn btn-outline-secondary" data-testid="user-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
