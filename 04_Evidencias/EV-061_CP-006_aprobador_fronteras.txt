@@ -1,0 +1,38 @@
+EV-061 - CP-006: Nivel de aprobación en las fronteras de los rangos
+==============================================================================
+Caso de prueba  : CP-006
+Requisito       : REQ-009
+Ejecución       : RUN-057
+Fecha/hora      : 2026-11-26 22:25:05 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.14.6 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: montos 999999.99, 1000000.00 y 10000000.00 con los rangos por defecto.
+RESULTADO ESPERADO (de las reglas, no del código): 999 999,99 -> Encargado de área; 1 000 000,00 -> Gerencia; 10 000 000,00 -> Junta Directiva. (REQ-009: intervalos semiabiertos [min, max))
+
+Comando: python -m pytest -v tests/unit/test_evaluation_rules.py::test_aprobador_por_rango tests/api/test_evaluation_api.py::test_aprobador_en_las_fronteras_de_los_rangos
+
+============================= test session starts =============================
+collecting ... collected 12 items
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[1-Encargado de \xe1rea] PASSED [  8%]
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[99999999-Encargado de \xe1rea] PASSED [ 16%]
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[100000000-Gerencia] PASSED [ 25%]
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[900000000-Gerencia] PASSED [ 33%]
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[999999999-Gerencia] PASSED [ 41%]
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[1000000000-Junta Directiva] PASSED [ 50%]
+tests/unit/test_evaluation_rules.py::test_aprobador_por_rango[500000000000-Junta Directiva] PASSED [ 58%]
+tests/api/test_evaluation_api.py::test_aprobador_en_las_fronteras_de_los_rangos[0.01-Encargado de \xe1rea] PASSED [ 66%]
+tests/api/test_evaluation_api.py::test_aprobador_en_las_fronteras_de_los_rangos[999999.99-Encargado de \xe1rea] PASSED [ 75%]
+tests/api/test_evaluation_api.py::test_aprobador_en_las_fronteras_de_los_rangos[1000000.00-Gerencia] PASSED [ 83%]
+tests/api/test_evaluation_api.py::test_aprobador_en_las_fronteras_de_los_rangos[9999999.99-Gerencia] PASSED [ 91%]
+tests/api/test_evaluation_api.py::test_aprobador_en_las_fronteras_de_los_rangos[10000000.00-Junta Directiva] PASSED [100%]
+============================= 12 passed in 5.80s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_aprobador_por_rango: PASSED en tests/unit/test_evaluation_rules.py
+  OK     test_aprobador_en_las_fronteras_de_los_rangos: PASSED en tests/api/test_evaluation_api.py
+  OK     resumen real de pytest: '12 passed in 5.80s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (4/4 verificaciones; 12 pruebas pasadas)

@@ -1,0 +1,30 @@
+EV-064 - CP-010: Evaluación de L1 y desempate por orden de registro
+==============================================================================
+Caso de prueba  : CP-010
+Requisito       : REQ-007
+Ejecución       : RUN-060
+Fecha/hora      : 2026-11-26 22:26:02 -0600
+Commit probado  : e65b2d8 (qa-build-1)   build de QA: qa-build-1 -> e65b2d8
+Árbol de trabajo: limpio (sin cambios en archivos versionados)
+Entorno         : Python 3.14.6 / Windows 11 / pytest 9.2.0 / BD SQLite temporal por prueba
+
+ENTRADAS EXACTAS: GET /api/tenders/{L1}/evaluation con el seed (P1 = 9 000 000,00; P2 = 9 500 000,00); escenario de empate con dos ofertas del mismo monto registradas en instantes distintos.
+RESULTADO ESPERADO (de las reglas, no del código): Mejor oferta = P1 (9 000 000,00). En el empate gana la registrada primero. (REQ-007)
+
+Comando: python -m pytest -v tests/api/test_evaluation_api.py::test_datos_base_l1 tests/api/test_evaluation_api.py::test_empate_gana_la_registrada_primero tests/unit/test_evaluation_rules.py::test_empate_gana_la_registrada_primero
+
+============================= test session starts =============================
+collecting ... collected 3 items
+tests/api/test_evaluation_api.py::test_datos_base_l1 PASSED              [ 33%]
+tests/api/test_evaluation_api.py::test_empate_gana_la_registrada_primero PASSED [ 66%]
+tests/unit/test_evaluation_rules.py::test_empate_gana_la_registrada_primero PASSED [100%]
+============================== 3 passed in 1.85s ==============================
+
+VERIFICACIONES
+  OK     pytest terminó con código 0 (0 = todas pasan)
+  OK     test_datos_base_l1: PASSED en tests/api/test_evaluation_api.py
+  OK     test_empate_gana_la_registrada_primero: PASSED en tests/api/test_evaluation_api.py
+  OK     test_empate_gana_la_registrada_primero: PASSED en tests/unit/test_evaluation_rules.py
+  OK     resumen real de pytest: '3 passed in 1.85s' (sin fallos ni errores)
+
+RESULTADO OBTENIDO: PASA  (5/5 verificaciones; 3 pruebas pasadas)
